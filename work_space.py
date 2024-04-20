@@ -299,7 +299,7 @@ def srtToVoiceEdge(srtFileNameAndPath, outputDir):
     
     async def convertSrtToVoiceEdge(text, path):
         print(f"Start to convert srt to voice into {path}, text: {text}")
-        communicate = edge_tts.Communicate(text, "zh-CN-XiaoxiaoMultilingualNeural")
+        communicate = edge_tts.Communicate(text, "zh-CN-XiaoyiNeural")
         await communicate.save(path)
 
     coroutines  = []
