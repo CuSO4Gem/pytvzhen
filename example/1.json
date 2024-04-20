@@ -19,5 +19,6 @@
     "GPT-SoVITS url": "",
     "voice connect": true,
     "audio zh transcribe": true,
-    "audio zh transcribe model": "medium"
+    "audio zh transcribe model": "medium",
+    "video zh preview": true
 }

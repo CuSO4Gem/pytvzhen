@@ -1,3 +1,17 @@
+[![演示视频](https://img.shields.io/badge/点击观看-演示视频-red?style=for-the-badge&logo=bilibili)](https://www.bilibili.com/video/BV1Kx421U78x)  
+
+[![Bilibili](https://img.shields.io/badge/Bilibili-蓝色硫酸铜-FF69B4?style=flat&logo=bilibili)](https://space.bilibili.com/278134)
+[![GitHub issues](https://img.shields.io/github/issues/CuSO4Gem/pytvzhen.svg)](https://github.com/CuSO4Gem/pytvzhen)
+[![GitHub stars](https://img.shields.io/github/stars/CuSO4Gem/pytvzhen.svg)](https://github.com/CuSO4Gem/pytvzhen)
+[![GitHub forks](https://img.shields.io/github/forks/CuSO4Gem/pytvzhen.svg)](https://github.com/CuSO4Gem/pytvzhen)  
+
+![Windows Supported](https://img.shields.io/badge/Windows-Supported-brightgreen)
+![Linux Supported](https://img.shields.io/badge/Linux-Supported-brightgreen)  
+
+<p align="center">
+  <img src="assets/flowchart.svg" alt="Flowchart">
+</p>
+
 # 说明
 本项目能够快速地将英文视频转换为中文视频，本项目的特点在于其速度快体现在整个运作流程之上，而不是某一单一节点。以往的其他方案文本翻译质量很差，90%的时间都消耗在人工文本校对和重新翻译之上。本方案的特点在于文本翻译质量极高，需要校对的时间特别少，因此能够快速出视频。  
 <br>
@@ -38,7 +52,19 @@ pytorch安装
 4. "work path"工作目录
 5. "audio remove model path"选择去背景音模型。models目录下提供了一个基本可用的模型baseline.pth
 6. (可选)将"srt merge translate tool"指定为deepl，并在"srt merge translate key"中输入deepl的api key。强烈推荐！！deepl的翻译准确度很高，可以为你节省很多时间。
-7. `python work_space.py`运行脚本，并输入你刚刚修改的脚本
+7. `python work_space.py`运行脚本，并输入你刚刚修改的脚本  
+
+## 重要产物
+- [video id]_zh.wav  视频的中文音频。
+- [video id]_zh_merge.srt 生成中文配音的源文件。
+- [video id]_preview.mp4  预览视频。
+- [video id]_zh.srt  中文视频的字幕。
+- [video id].mp4  下载的原始视频文件。
+- diagnosis.log 诊断日志。 
+
+[video id]_zh_merge.srt文件是配音生成的基础，字幕的时间戳对应配音的时间戳，字幕的长度对应配音的长度。[video id]_zh.srt是生成完整的中文语音之后，再通过AI识别出的字幕。
+execute_xxx.log 可以检查每一步的执行情况。
+diagnosis.log 诊断日志，主要反映视频生成中文语音过程中，内容上疑似有问题的地方。
 
 # 流程说明
 本项目流程串行执行后面的流程，依赖前面流程输出的文件。通过配置输入的Json文件，可以开关相应的流程。
@@ -142,6 +168,14 @@ pytorch安装
 
 需要这一步骤的主要原因是之前的中文字幕文件都是以一句一句作为分割，作为字幕来讲可能太长了，所以这里重新生成一份字幕文件。
 
+#### 视频预览
+- 流程开关："video zh preview"
+- 依赖参数：无
+- 输入文件：[video id].mp4 [video id]_zh.wav [video id]_insturment.wav
+- 输出文件：[video id]_preview.mp4  
+
+这一部是生成一个简易预览视频，方便查看最终效果。
+
 # json全参数说明
 参考paramDictTemplate的注释即可  
 ```python
@@ -166,7 +200,8 @@ paramDictTemplate = {
     "GPT-SoVITS url": "", # 不填写就是用edgeTTS，填写则为GPT-SoVITS 服务地址。建议不要用GPT-SoVITS
     "voice connect": True, # [工作流程开关]语音合并
     "audio zh transcribe": True, # [工作流程开关]合成后的语音转文字
-    "audio zh transcribe model": "medium" # 中文语音转文字模型名称
+    "audio zh transcribe model": "medium", # 中文语音转文字模型名称
+    "video zh preview": True # [工作流程开关]视频预览
 }
 ```
 ## 需要特别说明的参数
