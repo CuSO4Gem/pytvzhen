@@ -15,9 +15,9 @@ from tqdm import tqdm
 from pydub import AudioSegment
 import asyncio  
 import edge_tts
-from concurrent.futures import ThreadPoolExecutor
 import datetime
-from moviepy.editor import VideoFileClip
+from moviepy.editor import VideoFileClip, AudioFileClip, CompositeAudioClip
+from moviepy.video.tools.subtitles import SubtitlesClip
 import sys
 import traceback
 import deepl
@@ -47,7 +47,8 @@ paramDictTemplate = {
     "GPT-SoVITS url": "", # 不填写就是用edgeTTS，填写则为GPT-SoVITS 服务地址。简易不要用GPT-SoVITS
     "voice connect": True, # [工作流程开关]语音合并
     "audio zh transcribe": True, # [工作流程开关]合成后的语音转文字
-    "audio zh transcribe model": "medium" # 中文语音转文字模型名称
+    "audio zh transcribe model": "medium", # 中文语音转文字模型名称
+    "video zh preview": True # [工作流程开关]视频预览
 }
 diagnosisLog = None
 executeLog = None
@@ -298,7 +299,7 @@ def srtToVoiceEdge(srtFileNameAndPath, outputDir):
     
     async def convertSrtToVoiceEdge(text, path):
         print(f"Start to convert srt to voice into {path}, text: {text}")
-        communicate = edge_tts.Communicate(text, "zh-CN-XiaoyiNeural")
+        communicate = edge_tts.Communicate(text, "zh-CN-XiaoxiaoMultilingualNeural")
         await communicate.save(path)
 
     coroutines  = []
@@ -341,6 +342,33 @@ def srtToVoiceEdge(srtFileNameAndPath, outputDir):
     
     print("Convert srt to wav voice successfully")
     return True
+
+def zhVideoPreview(videoFileNameAndPath, voiceFileNameAndPath, insturmentFileNameAndPath, srtFileNameAndPath, outputFileNameAndPath):
+    
+    video_clip = VideoFileClip(videoFileNameAndPath)
+
+    # 加载音频
+    voice_clip = None
+    if (voiceFileNameAndPath is not None) and os.path.exists(voiceFileNameAndPath):
+        voice_clip = AudioFileClip(voiceFileNameAndPath)
+    insturment_clip = None
+    if (insturmentFileNameAndPath is not None) and os.path.exists(insturmentFileNameAndPath):
+        insturment_clip = AudioFileClip(insturmentFileNameAndPath)
+    
+    # 组合音频剪辑
+    final_audio = None
+    if voiceFileNameAndPath is not None and insturmentFileNameAndPath is not None:
+        final_audio = CompositeAudioClip([voice_clip, insturment_clip])
+    elif voiceFileNameAndPath is not None:
+        final_audio = voice_clip
+    elif insturmentFileNameAndPath is not None:
+        final_audio = insturment_clip
+    
+    video_clip = video_clip.set_audio(final_audio)  
+    video_clip.write_videofile(outputFileNameAndPath, codec='libx264', audio_codec='aac', remove_temp=True)
+
+    return True
+
 
 def voiceConnect(sourceDir, outputAndPath):
     MAX_SPEED_UP = 1.2  # 最大音频加速
@@ -696,6 +724,23 @@ if __name__ == "__main__":
         logStr = "[WORK -] Skip transcription."
         executeLog.write(logStr)
 
+    # 合成预览视频
+    previewVideoName = videoId + "_preview.mp4"
+    previewVideoNameAndPath = os.path.join(workPath, previewVideoName)
+    if paramDict["video zh preview"]:
+        try:
+            print(f"Generating zh preview video in {previewVideoNameAndPath}")
+            zhVideoPreview(viedoFileNameAndPath, voiceConnectedNameAndPath, insturmentNameAndPath, srtVoiceFileNameAndPath, previewVideoNameAndPath)
+            executeLog.write(f"[WORK o] Generate zh preview video in {previewVideoNameAndPath} successfully.")
+        except Exception as e:
+            logStr = f"[WORK x] Error: Program blocked while generating zh preview video in {previewVideoNameAndPath}."
+            executeLog.write(logStr)
+            error_str = traceback.format_exception_only(type(e), e)[-1].strip()
+            executeLog.write(error_str)
+            sys.exit(-1)
+    else:
+        logStr = "[WORK -] Skip zh preview video."
+        executeLog.write(logStr)
 
     executeLog.write("All done!!")
     print("dir: " + workPath)

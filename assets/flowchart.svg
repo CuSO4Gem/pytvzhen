@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- 由 Microsoft Visio, SVG Export 生成 流程.svg 页-1 -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ev="http://www.w3.org/2001/xml-events"
+		xmlns:v="http://schemas.microsoft.com/visio/2003/SVGExtensions/" width="9.4106in" height="4.15469in"
+		viewBox="0 0 677.563 299.138" xml:space="preserve" color-interpolation-filters="sRGB" class="st18">
+	<v:documentProperties v:langID="2052" v:metric="true" v:viewMarkup="false"/>
+
+	<style type="text/css">
+	<![CDATA[
+		.st1 {fill:#ffffff;stroke:#e8ebef;stroke-width:0.75}
+		.st2 {fill:#4672c4;stroke:#c7c8c8;stroke-width:0.25}
+		.st3 {fill:#feffff;font-family:黑体;font-size:0.833336em}
+		.st4 {fill:#feffff;font-family:Calibri;font-size:0.833336em}
+		.st5 {marker-end:url(#mrkr4-20);stroke:#4672c4;stroke-linecap:round;stroke-linejoin:round;stroke-width:1}
+		.st6 {fill:#4672c4;fill-opacity:1;stroke:#4672c4;stroke-opacity:1;stroke-width:0.28409090909091}
+		.st7 {fill:#ffffff;stroke:none;stroke-linecap:butt;stroke-width:7.2}
+		.st8 {fill:#3d64ac;font-family:Calibri;font-size:0.666664em}
+		.st9 {fill:#3d64ac;font-family:黑体;font-size:0.666664em}
+		.st10 {font-size:1em}
+		.st11 {fill:#ed7d31;stroke:#c7c8c8;stroke-width:0.25}
+		.st12 {font-family:黑体;font-size:1em}
+		.st13 {marker-end:url(#mrkr4-117);stroke:#ed7d31;stroke-linecap:round;stroke-linejoin:round;stroke-width:1}
+		.st14 {fill:#ed7d31;fill-opacity:1;stroke:#ed7d31;stroke-opacity:1;stroke-width:0.28409090909091}
+		.st15 {fill:#d16d2a;font-family:黑体;font-size:0.666664em}
+		.st16 {fill:none;stroke:none;stroke-width:0.25}
+		.st17 {fill:#4672c4;font-family:黑体;font-size:1.00001em}
+		.st18 {fill:none;fill-rule:evenodd;font-size:12px;overflow:visible;stroke-linecap:square;stroke-miterlimit:3}
+	]]>
+	</style>
+
+	<defs id="Markers">
+		<g id="lend4">
+			<path d="M 2 1 L 0 0 L 2 -1 L 2 1 " style="stroke:none"/>
+		</g>
+		<marker id="mrkr4-20" class="st6" v:arrowType="4" v:arrowSize="2" v:setback="7.04" refX="-7.04" orient="auto"
+				markerUnits="strokeWidth" overflow="visible">
+			<use xlink:href="#lend4" transform="scale(-3.52,-3.52) "/>
+		</marker>
+		<marker id="mrkr4-117" class="st14" v:arrowType="4" v:arrowSize="2" v:setback="6.68" refX="-6.68" orient="auto"
+				markerUnits="strokeWidth" overflow="visible">
+			<use xlink:href="#lend4" transform="scale(-3.52,-3.52) "/>
+		</marker>
+	</defs>
+	<g v:mID="0" v:index="1" v:groupContext="foregroundPage">
+		<title>页-1</title>
+		<v:pageProperties v:drawingScale="0.0393701" v:pageScale="0.0393701" v:drawingUnits="24" v:shadowOffsetX="8.50394"
+				v:shadowOffsetY="-8.50394"/>
+		<v:layer v:name="连接线" v:index="0"/>
+		<g id="shape63-1" v:mID="63" v:groupContext="shape" transform="translate(0.75,-0.75)">
+			<title>工作表.63</title>
+			<rect x="0" y="1.5" width="676.063" height="297.638" class="st1"/>
+		</g>
+		<g id="shape1-3" v:mID="1" v:groupContext="shape" transform="translate(10.6713,-234.53)">
+			<title>矩形</title>
+			<desc>原视频</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="39.685" cy="279.295" width="79.38" height="39.685"/>
+			<rect x="0" y="259.453" width="79.3701" height="39.685" class="st2"/>
+			<text x="24.69" y="282.62" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>原视频</text>		</g>
+		<g id="shape2-6" v:mID="2" v:groupContext="shape" transform="translate(163.742,-234.53)">
+			<title>矩形.2</title>
+			<desc>人声</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="39.685" cy="279.295" width="79.38" height="39.685"/>
+			<rect x="0" y="259.453" width="79.3701" height="39.685" class="st2"/>
+			<text x="29.69" y="282.62" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>人声</text>		</g>
+		<g id="shape3-9" v:mID="3" v:groupContext="shape" transform="translate(163.742,-149.49)">
+			<title>矩形.3</title>
+			<desc>BGM</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="39.685" cy="279.295" width="79.38" height="39.685"/>
+			<rect x="0" y="259.453" width="79.3701" height="39.685" class="st2"/>
+			<text x="29.54" y="282.3" class="st4" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>BGM</text>		</g>
+		<g id="shape4-12" v:mID="4" v:groupContext="shape" transform="translate(299.033,-234.53)">
+			<title>矩形.4</title>
+			<desc>英文字幕</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="39.685" cy="279.295" width="79.38" height="39.685"/>
+			<rect x="0" y="259.453" width="79.3701" height="39.685" class="st2"/>
+			<text x="19.69" y="282.62" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>英文字幕</text>		</g>
+		<g id="shape8-15" v:mID="8" v:groupContext="shape" v:layerMember="0" transform="translate(90.0413,-254.372)">
+			<title>有向线 1</title>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<path d="M0 299.14 L66.66 299.14" class="st5"/>
+		</g>
+		<g id="shape9-21" v:mID="9" v:groupContext="shape" v:layerMember="0" transform="translate(243.112,-254.372)">
+			<title>有向线 1.9</title>
+			<desc>Stable Whisper</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="27.9606" cy="287.799" width="59.09" height="17.0079"/>
+			<path d="M0 299.14 L48.88 299.14" class="st5"/>
+			<rect v:rectContext="textBkgnd" x="3.32431" y="282.999" width="49.2729" height="9.59985" class="st7"/>
+			<text x="3.32" y="290.2" class="st8" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Stable Whisper</text>		</g>
+		<g id="shape10-28" v:mID="10" v:groupContext="shape" v:layerMember="0"
+				transform="translate(316.097,-151.149) rotate(49.0856)">
+			<title>有向线 1.10</title>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<path d="M0 299.14 L105.49 299.14" class="st5"/>
+		</g>
+		<g id="shape32-33" v:mID="32" v:groupContext="shape" transform="translate(434.325,-234.53)">
+			<title>矩形.32</title>
+			<desc>拼接后英文字幕</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="39.685" cy="279.295" width="79.38" height="39.685"/>
+			<rect x="0" y="259.453" width="79.3701" height="39.685" class="st2"/>
+			<text x="4.69" y="282.62" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>拼接后英文字幕</text>		</g>
+		<g id="shape33-36" v:mID="33" v:groupContext="shape" v:layerMember="0" transform="translate(378.404,-254.372)">
+			<title>有向线 1.33</title>
+			<desc>脚本 让字幕 按语句 划分</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="27.9606" cy="287.799" width="56.7" height="17.0079"/>
+			<path d="M0 299.14 L48.88 299.14" class="st5"/>
+			<rect v:rectContext="textBkgnd" x="15.9607" y="266.499" width="23.9999" height="42.6" class="st7"/>
+			<text x="15.96" y="274.49" class="st9" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>脚本：<v:newlineChar/><tspan
+						x="15.96" dy="1.331em" class="st10">让字幕<v:newlineChar/></tspan><tspan x="15.96" dy="1.331em" class="st10">按语句<v:newlineChar/></tspan><tspan
+						x="19.96" dy="1.331em" class="st10">划分</tspan></text>		</g>
+		<g id="shape36-46" v:mID="36" v:groupContext="shape" transform="translate(569.616,-234.53)">
+			<title>矩形.36</title>
+			<desc>中文字幕</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="39.685" cy="279.295" width="79.38" height="39.685"/>
+			<rect x="0" y="259.453" width="79.3701" height="39.685" class="st2"/>
+			<text x="19.69" y="282.62" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>中文字幕</text>		</g>
+		<g id="shape37-49" v:mID="37" v:groupContext="shape" transform="translate(569.616,-149.49)">
+			<title>矩形.37</title>
+			<desc>逐句为中文语音</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="39.685" cy="279.295" width="79.38" height="39.685"/>
+			<rect x="0" y="259.453" width="79.3701" height="39.685" class="st2"/>
+			<text x="4.69" y="282.62" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>逐句为中文语音</text>		</g>
+		<g id="shape38-52" v:mID="38" v:groupContext="shape" transform="translate(434.325,-149.49)">
+			<title>矩形.38</title>
+			<desc>完整中文语音</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="39.685" cy="279.295" width="79.38" height="39.685"/>
+			<rect x="0" y="259.453" width="79.3701" height="39.685" class="st2"/>
+			<text x="9.68" y="282.62" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>完整中文语音</text>		</g>
+		<g id="shape39-55" v:mID="39" v:groupContext="shape" transform="translate(299.033,-149.49)">
+			<title>矩形.39</title>
+			<desc>中文字幕</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="39.685" cy="279.295" width="79.38" height="39.685"/>
+			<rect x="0" y="259.453" width="79.3701" height="39.685" class="st2"/>
+			<text x="19.69" y="282.62" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>中文字幕</text>		</g>
+		<g id="shape41-58" v:mID="41" v:groupContext="shape" transform="translate(299.033,-17.7579)">
+			<title>矩形.41</title>
+			<desc>中文视频</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="39.685" cy="279.295" width="79.38" height="39.685"/>
+			<rect x="0" y="259.453" width="79.3701" height="39.685" class="st11"/>
+			<text x="19.69" y="282.62" class="st3" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>中文视频</text>		</g>
+		<g id="shape42-61" v:mID="42" v:groupContext="shape" v:layerMember="0" transform="translate(513.695,-254.372)">
+			<title>侧边到侧边 1</title>
+			<desc>Google/ DeepL 翻译</desc>
+			<v:userDefs>
+				<v:ud v:nameU="TextPos" v:val="VT0(1):26"/>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="27.9606" cy="299.138" width="40" height="37.8536"/>
+			<path d="M0 299.14 L27.96 299.14 L48.88 299.14" class="st5"/>
+			<rect v:rectContext="textBkgnd" x="14.8826" y="284.213" width="26.156" height="29.8499" class="st7"/>
+			<text x="14.88" y="291.41" class="st8" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>Google<tspan
+						class="st10" v:langID="1033">/<v:newlineChar/></tspan><tspan x="17.74" dy="1.2em" class="st10"
+						v:langID="1033">DeepL<v:newlineChar/></tspan><tspan x="19.96" dy="1.298em" class="st12">翻译</tspan></text>		</g>
+		<g id="shape43-71" v:mID="43" v:groupContext="shape" v:layerMember="0" transform="translate(609.301,363.746) scale(1,-1)">
+			<title>侧边到侧边 1.43</title>
+			<desc>Videotrans 调用Edge配音</desc>
+			<v:userDefs>
+				<v:ud v:nameU="TextPos" v:val="VT0(1):26"/>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="-0" cy="276.461" width="57.67" height="28.2536"/>
+			<path d="M0 299.14 L0 260.82" class="st5"/>
+			<rect v:rectContext="textBkgnd" x="-23.9274" y="266.335" width="47.8551" height="20.25" class="st7"/>
+			<text x="-17.7" y="-279.39" transform="scale(1,-1)" class="st8" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Videotrans<v:newlineChar/><v:paragraph
+						v:horizAlign="1"/><tspan x="-23.93" dy="1.298em" class="st12" v:langID="2052">调用</tspan><tspan class="st10"
+						v:langID="2052">Edge</tspan><tspan class="st12" v:langID="2052">配音</tspan></text>		</g>
+		<g id="shape44-81" v:mID="44" v:groupContext="shape" v:layerMember="0" transform="translate(513.695,-169.333)">
+			<title>侧边到侧边 1.44</title>
+			<desc>脚本 按时间 合并</desc>
+			<v:userDefs>
+				<v:ud v:nameU="TextPos" v:val="VT0(1):26"/>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="27.9606" cy="299.138" width="40" height="39.9537"/>
+			<path d="M55.92 299.14 L27.96 299.14 L7.04 299.14" class="st5"/>
+			<rect v:rectContext="textBkgnd" x="15.9606" y="283.163" width="23.9999" height="31.9502" class="st7"/>
+			<text x="15.96" y="291.15" class="st9" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>脚本：<v:lf/><tspan
+						x="15.96" dy="1.331em" class="st10">按时间<v:newlineChar/></tspan><tspan x="19.96" dy="1.331em" class="st10">合并</tspan></text>		</g>
+		<g id="shape50-90" v:mID="50" v:groupContext="shape" v:layerMember="0"
+				transform="translate(701.432,343.973) rotate(130.513)">
+			<title>有向线 1.50</title>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<path d="M0 299.14 L140.13 299.14" class="st5"/>
+		</g>
+		<g id="shape51-95" v:mID="51" v:groupContext="shape" v:layerMember="0" transform="translate(637.856,149.648) rotate(90)">
+			<title>有向线 1.51</title>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<path d="M0 299.14 L85.01 299.14" class="st5"/>
+		</g>
+		<g id="shape52-100" v:mID="52" v:groupContext="shape" v:layerMember="0"
+				transform="translate(430.85,-44.6778) rotate(49.4872)">
+			<title>有向线 1.52</title>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<path d="M0 299.14 L140.13 299.14" class="st5"/>
+		</g>
+		<g id="shape53-105" v:mID="53" v:groupContext="shape" v:layerMember="0" transform="translate(434.325,428.943) rotate(180)">
+			<title>有向线 1.53</title>
+			<desc>Stable Whisper</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="27.9606" cy="310.476" width="59.09" height="17.0079" transform="rotate(180)"/>
+			<path d="M0 299.14 L48.88 299.14" class="st5"/>
+			<rect v:rectContext="textBkgnd" x="-52.5969" y="-315.276" width="49.2729" height="9.59985" transform="rotate(180)"
+					class="st7"/>
+			<text x="-52.6" y="-308.08" transform="rotate(180)" class="st8" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Stable Whisper</text>		</g>
+		<g id="shape57-112" v:mID="57" v:groupContext="shape" v:layerMember="0"
+				transform="translate(257.431,-177.919) rotate(-15.7677)">
+			<title>曲线连接 2.57</title>
+			<desc>校对修正</desc>
+			<v:userDefs>
+				<v:ud v:nameU="visVersion" v:val="VT0(15):26"/>
+			</v:userDefs>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="119.963" cy="304.623" width="56.7" height="19.0919" transform="rotate(15.7677)"/>
+			<path d="M-0 299.14 A1314.64 1314.64 -180 0 0 232.91 299.76 L233.27 299.73" class="st13"/>
+			<rect v:rectContext="textBkgnd" x="182.226" y="255.237" width="31.9999" height="10.6501" transform="rotate(15.7677)"
+					class="st7"/>
+			<text x="182.23" y="263.22" transform="rotate(15.7677)" class="st15" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>校对修正</text>		</g>
+		<g id="shape60-120" v:mID="60" v:groupContext="shape" transform="translate(94.1201,-210.435)">
+			<title>工作表.60</title>
+			<desc>人声背景声分离</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="50.4016" cy="289.138" width="100.81" height="20"/>
+			<rect x="0" y="279.138" width="100.803" height="20" class="st16"/>
+			<text x="8.4" y="293.13" class="st17" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>人声背景声分离</text>		</g>
+	</g>
+</svg>
