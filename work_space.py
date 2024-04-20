@@ -364,7 +364,7 @@ def voiceConnect(sourceDir, outputAndPath):
     duration = voiceMapSrt[-1].end.total_seconds() * 1000
     finalAudioFileAndPath = os.path.join(sourceDir, voiceMapSrt[-1].content)
     finalAudioEnd = voiceMapSrt[-1].start.total_seconds() * 1000
-    finalAudioEnd += AudioSegment.from_wav(finalAudioFileAndPath).duration_seconds
+    finalAudioEnd += AudioSegment.from_wav(finalAudioFileAndPath).duration_seconds * 1000
     duration = max(duration, finalAudioEnd)
 
     diagnosisLog.write("\n<Voice connect section>", False)
