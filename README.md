@@ -1,16 +1,17 @@
-[![演示视频](https://img.shields.io/badge/点击观看-演示视频-red?style=for-the-badge&logo=bilibili)](https://www.bilibili.com/video/BV1Kx421U78x)  
+<div align="center">
+<h1>Pytvzhen</h1>
+最快的英文视频转中文方案<br><br>
 
+[![演示视频](https://img.shields.io/badge/点击观看-演示视频-red?style=for-the-badge&logo=bilibili)](https://www.bilibili.com/video/BV1Kx421U78x)  
 [![Bilibili](https://img.shields.io/badge/Bilibili-蓝色硫酸铜-FF69B4?style=flat&logo=bilibili)](https://space.bilibili.com/278134)
 [![GitHub issues](https://img.shields.io/github/issues/CuSO4Gem/pytvzhen.svg)](https://github.com/CuSO4Gem/pytvzhen)
 [![GitHub stars](https://img.shields.io/github/stars/CuSO4Gem/pytvzhen.svg)](https://github.com/CuSO4Gem/pytvzhen)
 [![GitHub forks](https://img.shields.io/github/forks/CuSO4Gem/pytvzhen.svg)](https://github.com/CuSO4Gem/pytvzhen)  
-
 ![Windows Supported](https://img.shields.io/badge/Windows-Supported-brightgreen)
-![Linux Supported](https://img.shields.io/badge/Linux-Supported-brightgreen)  
+![Linux Supported](https://img.shields.io/badge/Linux-Supported-brightgreen) 
+</div> 
 
-<p align="center">
-  <img src="assets/flowchart.svg" alt="Flowchart">
-</p>
+---
 
 # 说明
 本项目能够快速地将英文视频转换为中文视频，本项目的特点在于其速度快体现在整个运作流程之上，而不是某一单一节点。以往的其他方案文本翻译质量很差，90%的时间都消耗在人工文本校对和重新翻译之上。本方案的特点在于文本翻译质量极高，需要校对的时间特别少，因此能够快速出视频。  
@@ -19,6 +20,9 @@
 - 文本翻译质量高，节约了其他方案中占比约90%的人工文本校对和翻译时间。  
 - 可以从任意步骤开始，因为每一步骤都生成文件且串行执行，下一步就依赖于上一步骤执行的文件。
 - 正如上一步所说的串行执行优点代码结构清晰，可以摘取任意一段为己所用。  
+<p align="center">
+  <img src="assets/flowchart.svg" alt="Flowchart">
+</p>
 <br>
 本方案缺陷：
 - 作者比较懒，没有时间做易用性调整。所以一些自定义的修改功能需要去源码里面查找。
