@@ -4,9 +4,6 @@
 
 [![演示视频](https://img.shields.io/badge/点击观看-演示视频-red?style=for-the-badge&logo=bilibili)](https://www.bilibili.com/video/BV1Kx421U78x)  
 [![Bilibili](https://img.shields.io/badge/Bilibili-蓝色硫酸铜-FF69B4?style=flat&logo=bilibili)](https://space.bilibili.com/278134)
-[![GitHub issues](https://img.shields.io/github/issues/CuSO4Gem/pytvzhen.svg)](https://github.com/CuSO4Gem/pytvzhen)
-[![GitHub stars](https://img.shields.io/github/stars/CuSO4Gem/pytvzhen.svg)](https://github.com/CuSO4Gem/pytvzhen)
-[![GitHub forks](https://img.shields.io/github/forks/CuSO4Gem/pytvzhen.svg)](https://github.com/CuSO4Gem/pytvzhen)  
 ![Windows Supported](https://img.shields.io/badge/Windows-Supported-brightgreen)
 ![Linux Supported](https://img.shields.io/badge/Linux-Supported-brightgreen) 
 </div> 
@@ -240,4 +237,5 @@ models目录下提供了一个基本可用的模型baseline.pth
  - [edge-tts](https://github.com/hasscc/hass-edge-tts)
  - [GPT-SoVITS](https://github.com/RVC-Boss/GPT-SoVITS)
  - [moviepy](https://github.com/Zulko/moviepy)
+ - [pywavfile](https://github.com/chummersone/pywavfile/)
 

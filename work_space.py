@@ -21,6 +21,9 @@ from moviepy.video.tools.subtitles import SubtitlesClip
 import sys
 import traceback
 import deepl
+import wave
+import math
+import struct
 
 PROXY = "127.0.0.1:7890"
 proxies = None
@@ -67,6 +70,10 @@ def download_youtube_video(video_id, fileNameAndPath):
     YouTube(f'https://youtu.be/{video_id}', proxies=proxies).streams.first().download(filename=fileNameAndPath)
 
 def transcribe_audio(path, modelName="base.en", languate="en",srtFilePathAndName="VIDEO_FILENAME.srt"):
+
+    # 非静音检测阈值，单位为分贝，越小越严格
+    NOT_SILENCE_THRESHOLD_DB = -30
+
     model = whisper.load_model(modelName) # Change this to your desired model
     print("Whisper model loaded.")
 
@@ -84,13 +91,48 @@ def transcribe_audio(path, modelName="base.en", languate="en",srtFilePathAndName
     # stable-whisper使用
     # transcribe.to_srt_vtt(srtFilePathAndName, word_level=False)
 
-    # 原生whisper使用
+    # 转换为srt的Subtitle对象
     segments = transcribe["segments"]
     index = 1
     subs = []
     for segment in segments:
         subtitle = srt.Subtitle(index, datetime.timedelta(seconds=segment["start"]), datetime.timedelta(seconds=segment["end"]), segment["text"])
         subs.append(subtitle)
+
+    # 重新校准字幕开头，以字幕开始时间后声音大于阈值的第一帧为准
+    audio = wave.open(path, 'rb')
+    frameRate = audio.getframerate()
+    notSilenceThreshold = math.pow(10, NOT_SILENCE_THRESHOLD_DB / 20)
+    for sub in subs:
+        startTime = sub.start.total_seconds()
+        startFrame = int(startTime * frameRate)
+        endTime = sub.end.total_seconds()
+        endFrame = int(endTime * frameRate)
+
+        newStartTime = startTime
+        audio.setpos(startFrame)
+        readFrames = endFrame - startFrame
+        for i in range(readFrames):
+            frame  = audio.readframes(1)
+            if not frame :
+                break
+            samples = struct.iter_unpack("<h", frame) 
+            sampleVolumes = []  # 用于存储每个样本的音量值
+            for sample_tuple  in samples:
+                # sample是一个样本值
+                # 调用calculate_volume函数计算样本的音量值，并将结果添加到sampleVolumes列表中
+                sample = sample_tuple[0]
+                sample_volume = abs(sample) / 32768
+                sampleVolumes.append(sample_volume)  # 将音量值添加到列表中
+            # 找出所有样本的音量值中的最大值
+            maxVolume = max(sampleVolumes)
+
+            if maxVolume > notSilenceThreshold:
+                newStartTime = startTime + i / frameRate
+                break
+    
+        sub.start = datetime.timedelta(seconds=newStartTime)
+    
     content = srt.compose(subs)
     with open(srtFilePathAndName, "w", encoding="utf-8") as file:
         file.write(content)
