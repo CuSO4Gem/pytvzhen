@@ -6,7 +6,7 @@ import copy
 import json
 from pytube import YouTube
 from pytube.cli import on_progress
-import stable_whisper
+import whisper
 import srt
 import re
 from pygtrans import Translate
@@ -36,7 +36,7 @@ paramDictTemplate = {
     "audio remove": True, # [工作流程开关]去除音乐
     "audio remove model path": "/path/to/your/audio_remove_model", # 去音乐模型路径
     "audio transcribe": True, # [工作流程开关]语音转文字
-    "audio transcribe model": "medium.en", # [工作流程开关]英文语音转文字模型名称
+    "audio transcribe model": "base.en", # [工作流程开关]英文语音转文字模型名称
     "srt merge": True, # [工作流程开关]字幕合并
     "srt merge en to text": True, # [工作流程开关]英文字幕转文字
     "srt merge translate": True, # [工作流程开关]字幕翻译
@@ -67,7 +67,7 @@ def download_youtube_video(video_id, fileNameAndPath):
     YouTube(f'https://youtu.be/{video_id}', proxies=proxies).streams.first().download(filename=fileNameAndPath)
 
 def transcribe_audio(path, modelName="base.en", languate="en",srtFilePathAndName="VIDEO_FILENAME.srt"):
-    model = stable_whisper.load_model(modelName) # Change this to your desired model
+    model = whisper.load_model(modelName) # Change this to your desired model
     print("Whisper model loaded.")
 
     # 确保简体中文 
@@ -75,10 +75,26 @@ def transcribe_audio(path, modelName="base.en", languate="en",srtFilePathAndName
     if languate=="zh":
         initial_prompt="简体"
     
-    transcribe = model.transcribe(audio=path,  language=languate, suppress_silence=False, vad=True, suppress_ts_tokens=False, temperature=0, initial_prompt=initial_prompt)
+    # stable-whisper使用
+    # transcribe = model.transcribe(audio=path,  language=languate, suppress_silence=True, vad=True, suppress_ts_tokens=False, initial_prompt=initial_prompt)
+    # 原生whisper使用
+    transcribe = model.transcribe(audio=path,  language=languate, initial_prompt=initial_prompt)
     print("Transcription complete.")
 
-    transcribe.to_srt_vtt(srtFilePathAndName, word_level=False)
+    # stable-whisper使用
+    # transcribe.to_srt_vtt(srtFilePathAndName, word_level=False)
+
+    # 原生whisper使用
+    segments = transcribe["segments"]
+    index = 1
+    subs = []
+    for segment in segments:
+        subtitle = srt.Subtitle(index, datetime.timedelta(seconds=segment["start"]), datetime.timedelta(seconds=segment["end"]), segment["text"])
+        subs.append(subtitle)
+    content = srt.compose(subs)
+    with open(srtFilePathAndName, "w", encoding="utf-8") as file:
+        file.write(content)
+
     print("SRT file created.")
     print("Output file: " + srtFilePathAndName)
     return True
