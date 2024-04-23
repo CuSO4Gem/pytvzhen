@@ -6,7 +6,7 @@ import copy
 import json
 from pytube import YouTube
 from pytube.cli import on_progress
-import whisper
+from faster_whisper import WhisperModel
 import srt
 import re
 from pygtrans import Translate
@@ -24,10 +24,12 @@ import deepl
 import wave
 import math
 import struct
+import whisper
 
 PROXY = "127.0.0.1:7890"
 proxies = None
 TTS_MAX_TRY_TIMES = 16
+USE_FASTER_WHISPER = True
 
 paramDictTemplate = {
     "proxy": "127.0.0.1:7890", # 代理地址，留空则不使用代理
@@ -73,31 +75,38 @@ def transcribe_audio(path, modelName="base.en", languate="en",srtFilePathAndName
 
     # 非静音检测阈值，单位为分贝，越小越严格
     NOT_SILENCE_THRESHOLD_DB = -30
-
-    model = whisper.load_model(modelName) # Change this to your desired model
-    print("Whisper model loaded.")
-
-    # 确保简体中文 
+     # 确保简体中文 
     initial_prompt=None
     if languate=="zh":
         initial_prompt="简体"
-    
-    # stable-whisper使用
-    # transcribe = model.transcribe(audio=path,  language=languate, suppress_silence=True, vad=True, suppress_ts_tokens=False, initial_prompt=initial_prompt)
-    # 原生whisper使用
-    transcribe = model.transcribe(audio=path,  language=languate, initial_prompt=initial_prompt)
+
+    if USE_FASTER_WHISPER:
+        model = WhisperModel(modelName, device="cuda", compute_type="float16", local_files_only=False)
+        print("Whisper model loaded.")
+
+        # faster-whisper
+        segments, _ = model.transcribe(audio=path,  language=languate, initial_prompt=initial_prompt)
+
+        # 转换为srt的Subtitle对象
+        segments = list(segments)
+        index = 1
+        subs = []
+        for segment in segments:
+            subtitle = srt.Subtitle(index, datetime.timedelta(seconds=segment.start), datetime.timedelta(seconds=segment.end), segment.text)
+            subs.append(subtitle)
+    else:
+        model = whisper.load_model(modelName) # Change this to your desired model
+        transcribe = model.transcribe(audio=path,  language=languate, initial_prompt=initial_prompt)
+        # 转换为srt的Subtitle对象
+        segments = transcribe["segments"]
+        index = 1
+        subs = []
+        for segment in segments:
+            subtitle = srt.Subtitle(index, datetime.timedelta(seconds=segment["start"]), datetime.timedelta(seconds=segment["end"]), segment["text"])
+            subs.append(subtitle)
+
+
     print("Transcription complete.")
-
-    # stable-whisper使用
-    # transcribe.to_srt_vtt(srtFilePathAndName, word_level=False)
-
-    # 转换为srt的Subtitle对象
-    segments = transcribe["segments"]
-    index = 1
-    subs = []
-    for segment in segments:
-        subtitle = srt.Subtitle(index, datetime.timedelta(seconds=segment["start"]), datetime.timedelta(seconds=segment["end"]), segment["text"])
-        subs.append(subtitle)
 
     # 重新校准字幕开头，以字幕开始时间后声音大于阈值的第一帧为准
     audio = wave.open(path, 'rb')
