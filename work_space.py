@@ -583,10 +583,10 @@ if __name__ == "__main__":
         print(f"Downloading video {videoId} to {viedoFileNameAndPath}")
         try:
             yt = YouTube(f'https://www.youtube.com/watch?v={videoId}', proxies=proxies, on_progress_callback=on_progress)
-            video  = yt.streams.filter(progressive=True).last()
+            video  = yt.streams.filter(progressive=True, file_extension='mp4').order_by('resolution').asc().first()
             video.download(output_path=workPath, filename=voiceFileName)
             # go back to the script directory
-            executeLog.write(f"[WORK o] Download video {videoId} to {viedoFileNameAndPath} successfully.")
+            executeLog.write(f"[WORK o] Download video {videoId} to {viedoFileNameAndPath} whith {video.resolution}.")
         except Exception as e:
             logStr = f"[WORK x] Error: Program blocked while downloading video {videoId} to {viedoFileNameAndPath}."
             executeLog.write(logStr)
@@ -598,17 +598,17 @@ if __name__ == "__main__":
         executeLog.write(logStr)
 
     
-    # try download 1080p video
-    # 需要单独下载1080p视频，因为pytube下载的1080p视频没音频
+    # try download more high-definition video
+    # 需要单独下载最高分辨率视频，因为pytube下载的1080p视频没音频
     voiceFhdFileName = f"{videoId}_fhd.mp4"
     voiceFhdFileNameAndPath = os.path.join(workPath, voiceFhdFileName)
     if paramDict["download fhd video"]:
         try:
-            print(f"Try to downloading 1080p video {videoId} to {voiceFhdFileNameAndPath}")
+            print(f"Try to downloading more high-definition video {videoId} to {voiceFhdFileNameAndPath}")
             yt = YouTube(f'https://www.youtube.com/watch?v={videoId}', proxies=proxies, on_progress_callback=on_progress)
-            video  = yt.streams.filter(res="1080p").first()
+            video  = yt.streams.filter(progressive=False, file_extension='mp4').order_by('resolution').desc().first()
             video.download(output_path=workPath, filename=voiceFhdFileName)
-            executeLog.write(f"[WORK o] Download 1080p video {videoId} to {voiceFhdFileNameAndPath} successfully.")
+            executeLog.write(f"[WORK o] Download 1080p high-definition {videoId} to {voiceFhdFileNameAndPath} whith {video.resolution}.")
         except:
             logStr = f"[WORK x] Error: Program blocked while downloading 1080p video {videoId} to {voiceFhdFileNameAndPath}."
             executeLog.write(logStr)
@@ -843,8 +843,19 @@ if __name__ == "__main__":
     previewVideoNameAndPath = os.path.join(workPath, previewVideoName)
     if paramDict["video zh preview"]:
         try:
+            sourceVideoNameAndPath = ""
+            if os.path.exists(voiceFhdFileNameAndPath):
+                sourceVideoNameAndPath = voiceFhdFileNameAndPath
+            elif os.path.exists(viedoFileNameAndPath):
+                print(f"Cannot find high-definition video, use low-definition video {viedoFileNameAndPath} for preview video {previewVideoNameAndPath}")
+                sourceVideoNameAndPath = viedoFileNameAndPath
+            else:
+                logStr = f"[WORK x] Error: Cannot find source video for preview video {previewVideoNameAndPath}."
+                executeLog.write(logStr)
+                sys.exit(-1)
+
             print(f"Generating zh preview video in {previewVideoNameAndPath}")
-            zhVideoPreview(viedoFileNameAndPath, voiceConnectedNameAndPath, insturmentNameAndPath, srtVoiceFileNameAndPath, previewVideoNameAndPath)
+            zhVideoPreview(sourceVideoNameAndPath, voiceConnectedNameAndPath, insturmentNameAndPath, srtVoiceFileNameAndPath, previewVideoNameAndPath)
             executeLog.write(f"[WORK o] Generate zh preview video in {previewVideoNameAndPath} successfully.")
         except Exception as e:
             logStr = f"[WORK x] Error: Program blocked while generating zh preview video in {previewVideoNameAndPath}."

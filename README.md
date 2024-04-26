@@ -183,7 +183,7 @@ GPT-SoVITS模式下，"TTS param"为GPT-SoVITS服务地址，具体参考[GPT-So
 - 输入文件：[video id].mp4 [video id]_zh.wav [video id]_insturment.wav
 - 输出文件：[video id]_preview.mp4  
 
-这一部是生成一个简易预览视频，方便查看最终效果。
+这一部是生成一个简易预览视频，方便查看最终效果。需要注意的是，程序默认优先使用高清视频进行合成，如果想优先使用低清视频，可以修改代码。
 
 # json全参数说明
 参考paramDictTemplate的注释即可  
