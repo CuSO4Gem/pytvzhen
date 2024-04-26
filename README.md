@@ -62,10 +62,15 @@ pytorch安装
 - [video id]_zh.srt  中文视频的字幕。
 - [video id].mp4  下载的原始视频文件。
 - diagnosis.log 诊断日志。 
-
-[video id]_zh_merge.srt文件是配音生成的基础，字幕的时间戳对应配音的时间戳，字幕的长度对应配音的长度。[video id]_zh.srt是生成完整的中文语音之后，再通过AI识别出的字幕。
+- [video id]_zh_merge.srt文件是配音生成的基础，字幕的时间戳对应配音的时间戳，字幕的长度对应配音的长度。[video id]_zh.srt是生成完整的中文语音之后，再通过AI识别出的字幕。
 execute_xxx.log 可以检查每一步的执行情况。
 diagnosis.log 诊断日志，主要反映视频生成中文语音过程中，内容上疑似有问题的地方。
+  
+## 快速使用常见问题
+抱错：  
+[WORK x] Error: Program blocked while transcribing audio from.....pass 'local_files_only=False' as input.  
+处理：  
+这是因为国内faster-whisper下载模型受阻导致的，修复这一问题有两个选择：1、研究怎么下载faster的模型或者使用自己下载好的faster-whister模型这不难。参考[这里](https://github.com/SYSTRAN/faster-whisper)。2、修改源码中的`USE_FASTER_WHISPER=True`为`USE_FASTER_WHISPER=False`，这样就不会使用faster-whisper模型。
 
 # 流程说明
 本项目流程串行执行后面的流程，依赖前面流程输出的文件。通过配置输入的Json文件，可以开关相应的流程。

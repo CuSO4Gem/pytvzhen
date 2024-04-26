@@ -71,7 +71,7 @@ def download_youtube_video(video_id, fileNameAndPath):
     from pytube import YouTube
     YouTube(f'https://youtu.be/{video_id}', proxies=proxies).streams.first().download(filename=fileNameAndPath)
 
-def transcribe_audio(path, modelName="base.en", languate="en",srtFilePathAndName="VIDEO_FILENAME.srt"):
+def transcribeAudioEn(path, modelName="base.en", languate="en",srtFilePathAndName="VIDEO_FILENAME.srt"):
 
     # 非静音检测阈值，单位为分贝，越小越严格
     NOT_SILENCE_THRESHOLD_DB = -30
@@ -149,6 +149,47 @@ def transcribe_audio(path, modelName="base.en", languate="en",srtFilePathAndName
     print("SRT file created.")
     print("Output file: " + srtFilePathAndName)
     return True
+
+def transcribeAudioZh(path, modelName="base.en", languate="en",srtFilePathAndName="VIDEO_FILENAME.srt"):
+    END_INTERPUNCTION = ["。", "！", "？", "…", "；", "，", "、", ",", ".", "!", "?", ";"]
+    ENGLISH_AND_NUMBER_CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+    # 这个功能需要Faster-Whisper模型，如果只用Whisper就没法使用
+    if USE_FASTER_WHISPER == False:
+        transcribeAudioEn(path, modelName, languate, srtFilePathAndName)
+        return True
+    model = WhisperModel(modelName, device="cuda", compute_type="float16", local_files_only=False)
+    segments, _ = model.transcribe(audio=path,  language="zh", word_timestamps=True, initial_prompt="简体")
+    index = 1
+    subs = []
+    for segment in segments:
+        subtitle = None
+        for word in segment.words:
+            if subtitle is None:
+                subtitle = srt.Subtitle(index, datetime.timedelta(seconds=word.start), datetime.timedelta(seconds=word.end), "")
+            finalWord = word.word.strip()
+            subtitle.end = datetime.timedelta(seconds=word.end)
+
+            # 排除英文字母+. 情况
+            if finalWord[-1] in END_INTERPUNCTION and not(finalWord[-1] == "." and len(finalWord)>1 and finalWord[-2] in ENGLISH_AND_NUMBER_CHARACTERS):
+                if not (finalWord[-1] == "." and len(finalWord)>1 and finalWord[-2] in ENGLISH_AND_NUMBER_CHARACTERS):
+                    pushWord = finalWord[:-1]
+                else:
+                    pushWord = finalWord
+                subtitle.content += pushWord
+                subs.append(subtitle)
+                index += 1
+                subtitle = None
+            else:
+                subtitle.content += finalWord
+
+        if subtitle is not None:
+            subs.append(subtitle)
+            index += 1
+
+    content = srt.compose(subs)
+    with open(srtFilePathAndName, "w", encoding="utf-8") as file:
+        file.write(content)
 
 def srtSentanceMerge(sourceSrtFilePathAndName, OutputSrtFilePathAndName):
     srtContent = open(sourceSrtFilePathAndName, "r", encoding="utf-8").read()
@@ -626,7 +667,7 @@ if __name__ == "__main__":
     if paramDict["audio transcribe"]:
         try:
             print(f"Transcribing audio from {voiceNameAndPath} to {srtEnFileNameAndPath}")
-            transcribe_audio(voiceNameAndPath, paramDict["audio transcribe model"], "en", srtEnFileNameAndPath)
+            transcribeAudioEn(voiceNameAndPath, paramDict["audio transcribe model"], "en", srtEnFileNameAndPath)
             executeLog.write(f"[WORK o] Transcribe audio from {voiceNameAndPath} to {srtEnFileNameAndPath} successfully.")
         except Exception as e:
             logStr = f"[WORK x] Error: Program blocked while transcribing audio from {voiceNameAndPath} to {srtEnFileNameAndPath}."
@@ -779,7 +820,7 @@ if __name__ == "__main__":
     if paramDict["audio zh transcribe"]:
         try:
             print(f"Transcribing audio from {voiceConnectedNameAndPath} to {srtVoiceFileNameAndPath}")
-            transcribe_audio(voiceConnectedNameAndPath, paramDict["audio zh transcribe model"] ,"zh", srtVoiceFileNameAndPath)
+            transcribeAudioZh(voiceConnectedNameAndPath, paramDict["audio zh transcribe model"] ,"zh", srtVoiceFileNameAndPath)
             executeLog.write(f"[WORK o] Transcribe audio from {voiceConnectedNameAndPath} to {srtVoiceFileNameAndPath} successfully.")
         except Exception as e:
             logStr = f"[WORK x] Error: Program blocked while transcribing audio from {voiceConnectedNameAndPath} to {srtVoiceFileNameAndPath}."
