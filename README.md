@@ -4,9 +4,6 @@
 
 [![演示视频](https://img.shields.io/badge/点击观看-演示视频-red?style=for-the-badge&logo=bilibili)](https://www.bilibili.com/video/BV1Kx421U78x)  
 [![Bilibili](https://img.shields.io/badge/Bilibili-蓝色硫酸铜-FF69B4?style=flat&logo=bilibili)](https://space.bilibili.com/278134)
-[![GitHub issues](https://img.shields.io/github/issues/CuSO4Gem/pytvzhen.svg)](https://github.com/CuSO4Gem/pytvzhen)
-[![GitHub stars](https://img.shields.io/github/stars/CuSO4Gem/pytvzhen.svg)](https://github.com/CuSO4Gem/pytvzhen)
-[![GitHub forks](https://img.shields.io/github/forks/CuSO4Gem/pytvzhen.svg)](https://github.com/CuSO4Gem/pytvzhen)  
 ![Windows Supported](https://img.shields.io/badge/Windows-Supported-brightgreen)
 ![Linux Supported](https://img.shields.io/badge/Linux-Supported-brightgreen) 
 </div> 
@@ -65,10 +62,15 @@ pytorch安装
 - [video id]_zh.srt  中文视频的字幕。
 - [video id].mp4  下载的原始视频文件。
 - diagnosis.log 诊断日志。 
-
-[video id]_zh_merge.srt文件是配音生成的基础，字幕的时间戳对应配音的时间戳，字幕的长度对应配音的长度。[video id]_zh.srt是生成完整的中文语音之后，再通过AI识别出的字幕。
+- [video id]_zh_merge.srt文件是配音生成的基础，字幕的时间戳对应配音的时间戳，字幕的长度对应配音的长度。[video id]_zh.srt是生成完整的中文语音之后，再通过AI识别出的字幕。
 execute_xxx.log 可以检查每一步的执行情况。
 diagnosis.log 诊断日志，主要反映视频生成中文语音过程中，内容上疑似有问题的地方。
+  
+## 快速使用常见问题
+抱错：  
+[WORK x] Error: Program blocked while transcribing audio from.....pass 'local_files_only=False' as input.  
+处理：  
+这是因为国内faster-whisper下载模型受阻导致的，修复这一问题有两个选择：1、研究怎么下载faster的模型或者使用自己下载好的faster-whister模型这不难。参考[这里](https://github.com/SYSTRAN/faster-whisper)。2、修改源码中的`USE_FASTER_WHISPER=True`为`USE_FASTER_WHISPER=False`，这样就不会使用faster-whisper模型。
 
 # 流程说明
 本项目流程串行执行后面的流程，依赖前面流程输出的文件。通过配置输入的Json文件，可以开关相应的流程。
@@ -150,11 +152,14 @@ diagnosis.log 诊断日志，主要反映视频生成中文语音过程中，内
 
 ### 中文合并字幕转语音
 - 流程开关："srt to voice srouce"
-- 依赖参数："GPT-SoVITS url"    
+- 依赖参数："TTS","TTS param"    
 - 输入文件：[video id]_zh_merge.txt
 - 输出文件：[video id]_zh_source目录
 
-这是一部是通过字幕文件转换成语音片段。"GPT-SoVITS url" 参数留空则使用edgeTTS，输入[GPT-SoVIT](https://github.com/RVC-Boss/GPT-SoVITS)创建的服务器地址则使用GPT-SoVIT文字转语音，推荐使用edge-TTS。GPT-SoVIT这个方案我虽然做了，但是根据实用来看并不是很实用，就当前这个时间点而言，其输出的音频并不是特别稳定，有时候还需要抽卡,至少我经常收到没有声音的音频。而这种自动化的流程无法判别你输出的音频质量是否符合视频要求。
+这是一部是通过字幕文件转换成语音片段，可以选择"GPT-SoVITS"或者"edge"。  
+edge模式下，"TTS param"为角色名称，不填则使用默认角色。  
+GPT-SoVITS模式下，"TTS param"为GPT-SoVITS服务地址，具体参考[GPT-SoVITS](https://github.com/RVC-Boss/GPT-SoVITS)项目。
+推荐使用edge-TTS。GPT-SoVIT这个方案我虽然做了，但是根据实用来看并不是很实用，就当前这个时间点而言，其输出的音频并不是特别稳定，有时候还需要抽卡,至少我经常收到没有声音的音频。而这种自动化的流程无法判别你输出的音频质量是否符合视频要求。
 
 ### 语音片段合并
 - 流程开关："voice connect"
@@ -170,7 +175,7 @@ diagnosis.log 诊断日志，主要反映视频生成中文语音过程中，内
 - 输入文件：[video id]_zh.wav 
 - 输出文件：[video id]_zh.srt
 
-需要这一步骤的主要原因是之前的中文字幕文件都是以一句一句作为分割，作为字幕来讲可能太长了，所以这里重新生成一份字幕文件。
+需要这一步骤的主要原因是之前的中文字幕文件都是以一句一句作为分割，作为字幕来讲可能太长了，所以这里重新生成一份字幕文件。模型推荐使用"medium"。
 
 #### 视频预览
 - 流程开关："video zh preview"
@@ -178,7 +183,7 @@ diagnosis.log 诊断日志，主要反映视频生成中文语音过程中，内
 - 输入文件：[video id].mp4 [video id]_zh.wav [video id]_insturment.wav
 - 输出文件：[video id]_preview.mp4  
 
-这一部是生成一个简易预览视频，方便查看最终效果。
+这一部是生成一个简易预览视频，方便查看最终效果。需要注意的是，程序默认优先使用高清视频进行合成，如果想优先使用低清视频，可以修改代码。
 
 # json全参数说明
 参考paramDictTemplate的注释即可  
@@ -193,7 +198,7 @@ paramDictTemplate = {
     "audio remove": True, # [工作流程开关]去除音乐
     "audio remove model path": "/path/to/your/audio_remove_model", # 去音乐模型路径
     "audio transcribe": True, # [工作流程开关]语音转文字
-    "audio transcribe model": "medium.en", # [工作流程开关]英文语音转文字模型名称
+    "audio transcribe model": "base.en", # [工作流程开关]英文语音转文字模型名称
     "srt merge": True, # [工作流程开关]字幕合并
     "srt merge en to text": True, # [工作流程开关]英文字幕转文字
     "srt merge translate": True, # [工作流程开关]字幕翻译
@@ -201,7 +206,8 @@ paramDictTemplate = {
     "srt merge translate key": "", # 翻译工具的key
     "srt merge zh to text": True, # [工作流程开关]中文字幕转文字
     "srt to voice srouce": True, # [工作流程开关]字幕转语音
-    "GPT-SoVITS url": "", # 不填写就是用edgeTTS，填写则为GPT-SoVITS 服务地址。建议不要用GPT-SoVITS
+    "TTS": "edge", # [工作流程开关]合成语音，目前支持edge和GPT-SoVITS
+    "TTS param": "", # TTS参数，GPT-SoVITS为地址，edge为角色。edge模式下可以不填，建议不要用GPT-SoVITS。
     "voice connect": True, # [工作流程开关]语音合并
     "audio zh transcribe": True, # [工作流程开关]合成后的语音转文字
     "audio zh transcribe model": "medium", # 中文语音转文字模型名称
@@ -240,4 +246,5 @@ models目录下提供了一个基本可用的模型baseline.pth
  - [edge-tts](https://github.com/hasscc/hass-edge-tts)
  - [GPT-SoVITS](https://github.com/RVC-Boss/GPT-SoVITS)
  - [moviepy](https://github.com/Zulko/moviepy)
+ - [pywavfile](https://github.com/chummersone/pywavfile/)
 
