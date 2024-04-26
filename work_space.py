@@ -49,7 +49,8 @@ paramDictTemplate = {
     "srt merge translate key": "", # 翻译工具的key
     "srt merge zh to text": True, # [工作流程开关]中文字幕转文字
     "srt to voice srouce": True, # [工作流程开关]字幕转语音
-    "GPT-SoVITS url": "", # 不填写就是用edgeTTS，填写则为GPT-SoVITS 服务地址。简易不要用GPT-SoVITS
+    "TTS": "edge", # [工作流程开关]合成语音，目前支持edge和GPT-SoVITS
+    "TTS param": "", # TTS参数，GPT-SoVITS为地址，edge为角色。edge模式下可以不填，建议不要用GPT-SoVITS。
     "voice connect": True, # [工作流程开关]语音合并
     "audio zh transcribe": True, # [工作流程开关]合成后的语音转文字
     "audio zh transcribe model": "medium", # 中文语音转文字模型名称
@@ -393,7 +394,7 @@ def srtToVoice(url, srtFileNameAndPath, outputDir):
     return True
 
 
-def srtToVoiceEdge(srtFileNameAndPath, outputDir):
+def srtToVoiceEdge(srtFileNameAndPath, outputDir, charactor = "zh-CN-XiaoyiNeural"):
     # create output directory if not exists
     if not os.path.exists(outputDir):
         os.makedirs(outputDir)
@@ -407,7 +408,7 @@ def srtToVoiceEdge(srtFileNameAndPath, outputDir):
     
     async def convertSrtToVoiceEdge(text, path):
         print(f"Start to convert srt to voice into {path}, text: {text}")
-        communicate = edge_tts.Communicate(text, "zh-CN-XiaoyiNeural")
+        communicate = edge_tts.Communicate(text, charactor)
         await communicate.save(path)
 
     coroutines  = []
@@ -767,7 +768,7 @@ if __name__ == "__main__":
         executeLog.write(logStr)
 
     # 字幕转语音
-    voiceUrl = paramDict["GPT-SoVITS url"]
+    ttsSelect = paramDict["TTS"]
     voiceDir = os.path.join(workPath, videoId + "_zh_source")
     voiceSrcSrtName = "zh.srt"
     voiceSrcSrtNameAndPath = os.path.join(voiceDir, voiceSrcSrtName)
@@ -775,12 +776,17 @@ if __name__ == "__main__":
     voiceSrcMapNameAndPath = os.path.join(voiceDir, voiceSrcMapName)
     if paramDict["srt to voice srouce"]:
         try:
-            if voiceUrl == "":
-                print(f"Converting subtitle to voice by EdgeTTS in {srtZhFileNameAndPath} to {voiceDir}")
-                srtToVoiceEdge(srtZhFileNameAndPath, voiceDir)
-            else:
+            if ttsSelect == "GPT-SoVITS":
                 print(f"Converting subtitle to voice by GPT-SoVITS  in {srtZhFileNameAndPath} to {voiceDir}")
+                voiceUrl = paramDict["TTS param"]
                 srtToVoice(voiceUrl, srtZhFileNameAndPath, voiceDir)
+            else:
+                charator = paramDict["TTS param"]
+                if charator == "":
+                    srtToVoiceEdge(srtZhFileNameAndPath, voiceDir)
+                else:
+                    srtToVoiceEdge(srtZhFileNameAndPath, voiceDir, charator)
+                print(f"Converting subtitle to voice by EdgeTTS in {srtZhFileNameAndPath} to {voiceDir}")
             executeLog.write(f"[WORK o] Convert subtitle to voice in {srtZhFileNameAndPath} to {voiceDir} successfully.")
         except Exception as e:
             logStr = f"[WORK x] Error: Program blocked while converting subtitle to voice in {srtZhFileNameAndPath} to {voiceDir}."
