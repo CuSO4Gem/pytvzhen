@@ -172,8 +172,9 @@ def transcribeAudioZh(path, modelName="base.en", languate="en",srtFilePathAndNam
             subtitle.end = datetime.timedelta(seconds=word.end)
 
             # 排除英文字母+. 情况
-            if finalWord[-1] in END_INTERPUNCTION and not(finalWord[-1] == "." and len(finalWord)>1 and finalWord[-2] in ENGLISH_AND_NUMBER_CHARACTERS):
-                if not (finalWord[-1] == "." and len(finalWord)>1 and finalWord[-2] in ENGLISH_AND_NUMBER_CHARACTERS):
+            if (finalWord[-1] in END_INTERPUNCTION and not(finalWord[-1] == "." and len(finalWord)>1 and finalWord[-2] in ENGLISH_AND_NUMBER_CHARACTERS)) \
+                or (subtitle is not None and len(subtitle.content) > 20) :
+                if not ((finalWord[-1] == "." and len(finalWord)>1 and finalWord[-2] in ENGLISH_AND_NUMBER_CHARACTERS) or (subtitle is not None and len(subtitle.content) > 20) ):
                     pushWord = finalWord[:-1]
                 else:
                     pushWord = finalWord
