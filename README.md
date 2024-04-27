@@ -23,6 +23,7 @@
 <br>
 本方案缺陷：
 - 作者比较懒，没有时间做易用性调整。所以一些自定义的修改功能需要去源码里面查找。
+- 你需要一张英伟达显卡。
 
 # 目录
 - [依赖](#依赖)
@@ -32,6 +33,7 @@
 - [工作流程](#工作流程)
 
 # 依赖
+首先，你需要一张英伟达显卡，因为作者比较懒只做了cuda的兼容。  
 安装依赖需要：requirements.txt中的各种依赖，pythorch库，ffmpeg(可选)。本工程Python 3.9.19上验证。另外如果你想体验完整的工作流程，推荐下载一个字幕文件编辑器，尽管本程序用不到，但是在转换视频的工作中，你一定用得到，我使用Aegisub。
 
 各种基本库安装  
@@ -43,7 +45,13 @@ pytorch安装
 在[点击这里](https://pytorch.org/get-started/locally/)，选择合适的安装版本，**必须要选择gpu版！！！！** 原因是作者偷懒没有做cpu方案，其实如果你愿意，改几行源码实现在CPU上跑应该也不难。
 
 其他依赖  
-因为本项目依赖[whisper](https://github.com/openai/whisper)，所以下载模型的时候国内可能会比较慢，可自行寻找解决方案whisper
+因为本项目依赖[faster-whisper](https://github.com/SYSTRAN/faster-whisper/)，所以下载模型的时候国内可能会比较慢，甚至无法下载！！可执行文件版本在`faster-whisper_models`目录自带模型（应该吧）。另外本项目的release会提供模型压缩包，源码用户可以解压在faster-whisper_models目录中，使得目录结构为：
+```
+faster-whisper_models
+     |-models--Systran--faster-whisper-base.en
+     |-models--Systran--faster-whisper-medium
+     |-...
+```
 
 # 快速使用
 由于作者偷懒，根本没有做什么易用性，所以这个快速使用也不会有多快。  
@@ -53,7 +61,7 @@ pytorch安装
 4. "work path"工作目录
 5. "audio remove model path"选择去背景音模型。models目录下提供了一个基本可用的模型baseline.pth
 6. (可选)将"srt merge translate tool"指定为deepl，并在"srt merge translate key"中输入deepl的api key。强烈推荐！！deepl的翻译准确度很高，可以为你节省很多时间。
-7. `python work_space.py`运行脚本，并输入你刚刚修改的脚本  
+7. 可执行文件打包版本运行：pytvzhen。源码版本运行：`python work_space.py`运行脚本，并输入你刚刚修改的脚本  
 
 ## 重要产物
 - [video id]_zh.wav  视频的中文音频。
@@ -70,7 +78,7 @@ diagnosis.log 诊断日志，主要反映视频生成中文语音过程中，内
 抱错：  
 [WORK x] Error: Program blocked while transcribing audio from.....pass 'local_files_only=False' as input.  
 处理：  
-这是因为国内faster-whisper下载模型受阻导致的，修复这一问题有两个选择：1、研究怎么下载faster的模型或者使用自己下载好的faster-whister模型这不难。参考[这里](https://github.com/SYSTRAN/faster-whisper)。2、修改源码中的`USE_FASTER_WHISPER=True`为`USE_FASTER_WHISPER=False`，这样就不会使用faster-whisper模型。
+这是因为国内faster-whisper下载模型受阻导致的，修复这一问题有散个选择：1、下载release中的模型，放置在faster-whisper_models目录下。2、自己科学上网下载，放置在faster-whisper_models目录。3、科学上网，让程序自动下载。
 
 # 流程说明
 本项目流程串行执行后面的流程，依赖前面流程输出的文件。通过配置输入的Json文件，可以开关相应的流程。

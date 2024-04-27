@@ -1,5 +1,6 @@
 aiohttp==3.9.3
 aiosignal==1.3.1
+altgraph==0.17.4
 annotated-types==0.6.0
 anyio==4.3.0
 asttokens==2.4.1
@@ -35,6 +36,7 @@ humanfriendly==10.0
 idna==3.6
 imageio==2.34.0
 imageio-ffmpeg==0.4.9
+importlib_metadata==7.1.0
 ipython==8.18.1
 jedi==0.19.1
 Jinja2==3.1.3
@@ -58,6 +60,7 @@ openai-whisper==20231117
 opencv-python==4.9.0.80
 packaging==24.0
 parso==0.8.3
+pefile==2023.2.7
 pillow==10.2.0
 platformdirs==4.2.0
 pooch==1.8.1
@@ -71,9 +74,12 @@ pydantic_core==2.16.3
 pydub==0.25.1
 Pygments==2.17.2
 pygtrans==1.5.3
+pyinstaller==6.6.0
+pyinstaller-hooks-contrib==2024.5
 pyreadline3==3.4.1
 PySocks==1.7.1
 pytube==15.0.0
+pywin32-ctypes==0.2.2
 PyYAML==6.0.1
 regex==2023.12.25
 requests==2.31.0
@@ -100,3 +106,4 @@ typing_extensions==4.10.0
 urllib3==1.26.5
 wcwidth==0.2.13
 yarl==1.9.4
+zipp==3.18.1
