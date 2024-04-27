@@ -566,8 +566,10 @@ def voiceConnect(sourceDir, outputAndPath):
     return True
 
 if __name__ == "__main__":
+
+    print("Please input the path and name of the parameter file (json format): ")
     root = tk.Tk()
-    root.withdraw()  # 隐藏主窗口
+    root.deiconify()  # 隐藏主窗口
     paramDirPathAndName = filedialog.askopenfilename()  # 打开文件选择对话框
 
     # 检查paramDirPathAndName是否存在，是否为json文件
@@ -904,6 +906,9 @@ if __name__ == "__main__":
 
     executeLog.write("All done!!")
     print("dir: " + workPath)
+
+    # push any key to exit
+    input("Press any key to exit...")
     
 
     

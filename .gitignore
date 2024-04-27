@@ -18,3 +18,7 @@ venv/
 
 __pycache__
 work
+
+models--Systran--faster-whisper-*
+build
+dist
