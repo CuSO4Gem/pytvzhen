@@ -24,14 +24,12 @@ import deepl
 import wave
 import math
 import struct
-import whisper
 import tkinter as tk
 from tkinter import filedialog
 
 PROXY = "127.0.0.1:7890"
 proxies = None
 TTS_MAX_TRY_TIMES = 16
-USE_FASTER_WHISPER = True
 
 paramDictTemplate = {
     "proxy": "127.0.0.1:7890", # 代理地址，留空则不使用代理
@@ -86,50 +84,39 @@ def transcribeAudioEn(path, modelName="base.en", languate="en",srtFilePathAndNam
     if languate=="zh":
         initial_prompt="简体"
 
-    if USE_FASTER_WHISPER:
-        model = WhisperModel(modelName, device="cuda", compute_type="float16", local_files_only=False)
-        print("Whisper model loaded.")
+    model = WhisperModel(modelName, device="cuda", compute_type="float16", download_root="faster-whisper_models", local_files_only=False)
+    print("Whisper model loaded.")
 
-        # faster-whisper
-        segments, _ = model.transcribe(audio=path,  language=languate, word_timestamps=True, initial_prompt=initial_prompt)
+    # faster-whisper
+    segments, _ = model.transcribe(audio=path,  language=languate, word_timestamps=True, initial_prompt=initial_prompt)
 
-        # 转换为srt的Subtitle对象
-        index = 1
-        subs = []
-        subtitle = None
-        for segment in segments:
-            for word in segment.words:
-                if subtitle is None:
-                    subtitle = srt.Subtitle(index, datetime.timedelta(seconds=word.start), datetime.timedelta(seconds=word.end), "")
-                finalWord = word.word.strip()
-                subtitle.end = datetime.timedelta(seconds=word.end)
+    # 转换为srt的Subtitle对象
+    index = 1
+    subs = []
+    subtitle = None
+    for segment in segments:
+        for word in segment.words:
+            if subtitle is None:
+                subtitle = srt.Subtitle(index, datetime.timedelta(seconds=word.start), datetime.timedelta(seconds=word.end), "")
+            finalWord = word.word.strip()
+            subtitle.end = datetime.timedelta(seconds=word.end)
 
-                # 一句结束。但是要特别排除小数点被误认为是一句结尾的情况。
-                if (finalWord[-1] in END_INTERPUNCTION) and not (len(finalWord)>1 and finalWord[-2] in NUMBER_CHARACTERS):
-                    pushWord = " " +finalWord
-                    subtitle.content += pushWord
-                    subs.append(subtitle)
-                    index += 1
-                    subtitle = None
+            # 一句结束。但是要特别排除小数点被误认为是一句结尾的情况。
+            if (finalWord[-1] in END_INTERPUNCTION) and not (len(finalWord)>1 and finalWord[-2] in NUMBER_CHARACTERS):
+                pushWord = " " +finalWord
+                subtitle.content += pushWord
+                subs.append(subtitle)
+                index += 1
+                subtitle = None
+            else:
+                if subtitle.content == "":
+                    subtitle.content = finalWord
                 else:
-                    if subtitle.content == "":
-                        subtitle.content = finalWord
-                    else:
-                        subtitle.content = subtitle.content + " " + finalWord
-        # 补充最后一个字幕 
-        if subtitle is not None:
-            subs.append(subtitle)
-            index += 1
-    else:
-        model = whisper.load_model(modelName) # Change this to your desired model
-        transcribe = model.transcribe(audio=path,  language=languate, initial_prompt=initial_prompt)
-        # 转换为srt的Subtitle对象
-        segments = transcribe["segments"]
-        index = 1
-        subs = []
-        for segment in segments:
-            subtitle = srt.Subtitle(index, datetime.timedelta(seconds=segment["start"]), datetime.timedelta(seconds=segment["end"]), segment["text"])
-            subs.append(subtitle)
+                    subtitle.content = subtitle.content + " " + finalWord
+    # 补充最后一个字幕 
+    if subtitle is not None:
+        subs.append(subtitle)
+        index += 1
 
 
     print("Transcription complete.")
@@ -180,11 +167,7 @@ def transcribeAudioZh(path, modelName="base.en", languate="en",srtFilePathAndNam
     END_INTERPUNCTION = ["。", "！", "？", "…", "；", "，", "、", ",", ".", "!", "?", ";"]
     ENGLISH_AND_NUMBER_CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
-    # 这个功能需要Faster-Whisper模型，如果只用Whisper就没法使用
-    if USE_FASTER_WHISPER == False:
-        transcribeAudioEn(path, modelName, languate, srtFilePathAndName)
-        return True
-    model = WhisperModel(modelName, device="cuda", compute_type="float16", local_files_only=False)
+    model = WhisperModel(modelName, device="cuda", compute_type="float16", download_root="faster-whisper_models", local_files_only=False)
     segments, _ = model.transcribe(audio=path,  language="zh", word_timestamps=True, initial_prompt="简体")
     index = 1
     subs = []
