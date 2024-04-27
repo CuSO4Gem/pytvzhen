@@ -25,7 +25,8 @@ import wave
 import math
 import struct
 import whisper
-import IPython
+import tkinter as tk
+from tkinter import filedialog
 
 PROXY = "127.0.0.1:7890"
 proxies = None
@@ -565,7 +566,16 @@ def voiceConnect(sourceDir, outputAndPath):
     return True
 
 if __name__ == "__main__":
-    paramDirPathAndName = input("Please input the path and name of the parameter file: ")
+    root = tk.Tk()
+    root.withdraw()  # 隐藏主窗口
+    paramDirPathAndName = filedialog.askopenfilename()  # 打开文件选择对话框
+
+    # 检查paramDirPathAndName是否存在，是否为json文件
+    if not os.path.exists(paramDirPathAndName) or not os.path.isfile(paramDirPathAndName) or not paramDirPathAndName.endswith(".json"):
+        print("Please select a valid parameter file.")
+        exit(-1)
+
+    # paramDirPathAndName = input("Please input the path and name of the parameter file: ")
     if not os.path.exists(paramDirPathAndName):
         create_param_template(paramDirPathAndName)
         print(f"Parameter file created at {paramDirPathAndName}.")
