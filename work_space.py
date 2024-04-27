@@ -25,6 +25,7 @@ import wave
 import math
 import struct
 import whisper
+import IPython
 
 PROXY = "127.0.0.1:7890"
 proxies = None
@@ -76,6 +77,9 @@ def transcribeAudioEn(path, modelName="base.en", languate="en",srtFilePathAndNam
 
     # 非静音检测阈值，单位为分贝，越小越严格
     NOT_SILENCE_THRESHOLD_DB = -30
+
+    END_INTERPUNCTION = ["…", ".", "!", "?", ";"]
+    NUMBER_CHARACTERS = "0123456789"
      # 确保简体中文 
     initial_prompt=None
     if languate=="zh":
@@ -86,15 +90,35 @@ def transcribeAudioEn(path, modelName="base.en", languate="en",srtFilePathAndNam
         print("Whisper model loaded.")
 
         # faster-whisper
-        segments, _ = model.transcribe(audio=path,  language=languate, initial_prompt=initial_prompt)
+        segments, _ = model.transcribe(audio=path,  language=languate, word_timestamps=True, initial_prompt=initial_prompt)
 
         # 转换为srt的Subtitle对象
-        segments = list(segments)
         index = 1
         subs = []
+        subtitle = None
         for segment in segments:
-            subtitle = srt.Subtitle(index, datetime.timedelta(seconds=segment.start), datetime.timedelta(seconds=segment.end), segment.text)
+            for word in segment.words:
+                if subtitle is None:
+                    subtitle = srt.Subtitle(index, datetime.timedelta(seconds=word.start), datetime.timedelta(seconds=word.end), "")
+                finalWord = word.word.strip()
+                subtitle.end = datetime.timedelta(seconds=word.end)
+
+                # 一句结束。但是要特别排除小数点被误认为是一句结尾的情况。
+                if (finalWord[-1] in END_INTERPUNCTION) and not (len(finalWord)>1 and finalWord[-2] in NUMBER_CHARACTERS):
+                    pushWord = " " +finalWord
+                    subtitle.content += pushWord
+                    subs.append(subtitle)
+                    index += 1
+                    subtitle = None
+                else:
+                    if subtitle.content == "":
+                        subtitle.content = finalWord
+                    else:
+                        subtitle.content = subtitle.content + " " + finalWord
+        # 补充最后一个字幕 
+        if subtitle is not None:
             subs.append(subtitle)
+            index += 1
     else:
         model = whisper.load_model(modelName) # Change this to your desired model
         transcribe = model.transcribe(audio=path,  language=languate, initial_prompt=initial_prompt)
