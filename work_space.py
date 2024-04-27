@@ -552,8 +552,9 @@ if __name__ == "__main__":
 
     print("Please input the path and name of the parameter file (json format): ")
     root = tk.Tk()
-    root.deiconify()  # 隐藏主窗口
+    root.deiconify()  # 打开主窗口
     paramDirPathAndName = filedialog.askopenfilename()  # 打开文件选择对话框
+    root.destroy()  # 关闭主窗口
 
     # 检查paramDirPathAndName是否存在，是否为json文件
     if not os.path.exists(paramDirPathAndName) or not os.path.isfile(paramDirPathAndName) or not paramDirPathAndName.endswith(".json"):
