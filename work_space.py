@@ -6,7 +6,7 @@ import copy
 import json
 from pytube import YouTube
 from pytube.cli import on_progress
-import stable_whisper
+from faster_whisper import WhisperModel
 import srt
 import re
 from pygtrans import Translate
@@ -21,6 +21,11 @@ from moviepy.video.tools.subtitles import SubtitlesClip
 import sys
 import traceback
 import deepl
+import wave
+import math
+import struct
+import tkinter as tk
+from tkinter import filedialog
 
 PROXY = "127.0.0.1:7890"
 proxies = None
@@ -36,7 +41,7 @@ paramDictTemplate = {
     "audio remove": True, # [工作流程开关]去除音乐
     "audio remove model path": "/path/to/your/audio_remove_model", # 去音乐模型路径
     "audio transcribe": True, # [工作流程开关]语音转文字
-    "audio transcribe model": "medium.en", # [工作流程开关]英文语音转文字模型名称
+    "audio transcribe model": "base.en", # [工作流程开关]英文语音转文字模型名称
     "srt merge": True, # [工作流程开关]字幕合并
     "srt merge en to text": True, # [工作流程开关]英文字幕转文字
     "srt merge translate": True, # [工作流程开关]字幕翻译
@@ -44,7 +49,8 @@ paramDictTemplate = {
     "srt merge translate key": "", # 翻译工具的key
     "srt merge zh to text": True, # [工作流程开关]中文字幕转文字
     "srt to voice srouce": True, # [工作流程开关]字幕转语音
-    "GPT-SoVITS url": "", # 不填写就是用edgeTTS，填写则为GPT-SoVITS 服务地址。简易不要用GPT-SoVITS
+    "TTS": "edge", # [工作流程开关]合成语音，目前支持edge和GPT-SoVITS
+    "TTS param": "", # TTS参数，GPT-SoVITS为地址，edge为角色。edge模式下可以不填，建议不要用GPT-SoVITS。
     "voice connect": True, # [工作流程开关]语音合并
     "audio zh transcribe": True, # [工作流程开关]合成后的语音转文字
     "audio zh transcribe model": "medium", # 中文语音转文字模型名称
@@ -66,22 +72,134 @@ def download_youtube_video(video_id, fileNameAndPath):
     from pytube import YouTube
     YouTube(f'https://youtu.be/{video_id}', proxies=proxies).streams.first().download(filename=fileNameAndPath)
 
-def transcribe_audio(path, modelName="base.en", languate="en",srtFilePathAndName="VIDEO_FILENAME.srt"):
-    model = stable_whisper.load_model(modelName) # Change this to your desired model
-    print("Whisper model loaded.")
+def transcribeAudioEn(path, modelName="base.en", languate="en",srtFilePathAndName="VIDEO_FILENAME.srt"):
 
-    # 确保简体中文 
+    # 非静音检测阈值，单位为分贝，越小越严格
+    NOT_SILENCE_THRESHOLD_DB = -30
+
+    END_INTERPUNCTION = ["…", ".", "!", "?", ";"]
+    NUMBER_CHARACTERS = "0123456789"
+     # 确保简体中文 
     initial_prompt=None
     if languate=="zh":
         initial_prompt="简体"
-    
-    transcribe = model.transcribe(audio=path,  language=languate, suppress_silence=False, vad=True, suppress_ts_tokens=False, temperature=0, initial_prompt=initial_prompt)
+
+    model = WhisperModel(modelName, device="cuda", compute_type="float16", download_root="faster-whisper_models", local_files_only=False)
+    print("Whisper model loaded.")
+
+    # faster-whisper
+    segments, _ = model.transcribe(audio=path,  language=languate, word_timestamps=True, initial_prompt=initial_prompt)
+
+    # 转换为srt的Subtitle对象
+    index = 1
+    subs = []
+    subtitle = None
+    for segment in segments:
+        for word in segment.words:
+            if subtitle is None:
+                subtitle = srt.Subtitle(index, datetime.timedelta(seconds=word.start), datetime.timedelta(seconds=word.end), "")
+            finalWord = word.word.strip()
+            subtitle.end = datetime.timedelta(seconds=word.end)
+
+            # 一句结束。但是要特别排除小数点被误认为是一句结尾的情况。
+            if (finalWord[-1] in END_INTERPUNCTION) and not (len(finalWord)>1 and finalWord[-2] in NUMBER_CHARACTERS):
+                pushWord = " " +finalWord
+                subtitle.content += pushWord
+                subs.append(subtitle)
+                index += 1
+                subtitle = None
+            else:
+                if subtitle.content == "":
+                    subtitle.content = finalWord
+                else:
+                    subtitle.content = subtitle.content + " " + finalWord
+    # 补充最后一个字幕 
+    if subtitle is not None:
+        subs.append(subtitle)
+        index += 1
+
+
     print("Transcription complete.")
 
-    transcribe.to_srt_vtt(srtFilePathAndName, word_level=False)
+    # 重新校准字幕开头，以字幕开始时间后声音大于阈值的第一帧为准
+    audio = wave.open(path, 'rb')
+    frameRate = audio.getframerate()
+    notSilenceThreshold = math.pow(10, NOT_SILENCE_THRESHOLD_DB / 20)
+    for sub in subs:
+        startTime = sub.start.total_seconds()
+        startFrame = int(startTime * frameRate)
+        endTime = sub.end.total_seconds()
+        endFrame = int(endTime * frameRate)
+
+        newStartTime = startTime
+        audio.setpos(startFrame)
+        readFrames = endFrame - startFrame
+        for i in range(readFrames):
+            frame  = audio.readframes(1)
+            if not frame :
+                break
+            samples = struct.iter_unpack("<h", frame) 
+            sampleVolumes = []  # 用于存储每个样本的音量值
+            for sample_tuple  in samples:
+                # sample是一个样本值
+                # 调用calculate_volume函数计算样本的音量值，并将结果添加到sampleVolumes列表中
+                sample = sample_tuple[0]
+                sample_volume = abs(sample) / 32768
+                sampleVolumes.append(sample_volume)  # 将音量值添加到列表中
+            # 找出所有样本的音量值中的最大值
+            maxVolume = max(sampleVolumes)
+
+            if maxVolume > notSilenceThreshold:
+                newStartTime = startTime + i / frameRate
+                break
+    
+        sub.start = datetime.timedelta(seconds=newStartTime)
+    
+    content = srt.compose(subs)
+    with open(srtFilePathAndName, "w", encoding="utf-8") as file:
+        file.write(content)
+
     print("SRT file created.")
     print("Output file: " + srtFilePathAndName)
     return True
+
+def transcribeAudioZh(path, modelName="base.en", languate="en",srtFilePathAndName="VIDEO_FILENAME.srt"):
+    END_INTERPUNCTION = ["。", "！", "？", "…", "；", "，", "、", ",", ".", "!", "?", ";"]
+    ENGLISH_AND_NUMBER_CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+    model = WhisperModel(modelName, device="cuda", compute_type="float16", download_root="faster-whisper_models", local_files_only=False)
+    segments, _ = model.transcribe(audio=path,  language="zh", word_timestamps=True, initial_prompt="简体")
+    index = 1
+    subs = []
+    for segment in segments:
+        subtitle = None
+        for word in segment.words:
+            if subtitle is None:
+                subtitle = srt.Subtitle(index, datetime.timedelta(seconds=word.start), datetime.timedelta(seconds=word.end), "")
+            finalWord = word.word.strip()
+            subtitle.end = datetime.timedelta(seconds=word.end)
+
+            # 排除英文字母+. 情况
+            if (finalWord[-1] in END_INTERPUNCTION and not(finalWord[-1] == "." and len(finalWord)>1 and finalWord[-2] in ENGLISH_AND_NUMBER_CHARACTERS)) \
+                or (subtitle is not None and len(subtitle.content) > 20) :
+                if not ((finalWord[-1] == "." and len(finalWord)>1 and finalWord[-2] in ENGLISH_AND_NUMBER_CHARACTERS) or (subtitle is not None and len(subtitle.content) > 20) ):
+                    pushWord = finalWord[:-1]
+                else:
+                    pushWord = finalWord
+                subtitle.content += pushWord
+                subs.append(subtitle)
+                index += 1
+                subtitle = None
+            else:
+                subtitle.content += finalWord
+
+        if subtitle is not None:
+            subs.append(subtitle)
+            index += 1
+
+    content = srt.compose(subs)
+    with open(srtFilePathAndName, "w", encoding="utf-8") as file:
+        file.write(content)
 
 def srtSentanceMerge(sourceSrtFilePathAndName, OutputSrtFilePathAndName):
     srtContent = open(sourceSrtFilePathAndName, "r", encoding="utf-8").read()
@@ -285,7 +403,7 @@ def srtToVoice(url, srtFileNameAndPath, outputDir):
     return True
 
 
-def srtToVoiceEdge(srtFileNameAndPath, outputDir):
+def srtToVoiceEdge(srtFileNameAndPath, outputDir, charactor = "zh-CN-XiaoyiNeural"):
     # create output directory if not exists
     if not os.path.exists(outputDir):
         os.makedirs(outputDir)
@@ -299,7 +417,7 @@ def srtToVoiceEdge(srtFileNameAndPath, outputDir):
     
     async def convertSrtToVoiceEdge(text, path):
         print(f"Start to convert srt to voice into {path}, text: {text}")
-        communicate = edge_tts.Communicate(text, "zh-CN-XiaoyiNeural")
+        communicate = edge_tts.Communicate(text, charactor)
         await communicate.save(path)
 
     coroutines  = []
@@ -431,7 +549,19 @@ def voiceConnect(sourceDir, outputAndPath):
     return True
 
 if __name__ == "__main__":
-    paramDirPathAndName = input("Please input the path and name of the parameter file: ")
+
+    print("Please input the path and name of the parameter file (json format): ")
+    root = tk.Tk()
+    root.deiconify()  # 打开主窗口
+    paramDirPathAndName = filedialog.askopenfilename()  # 打开文件选择对话框
+    root.destroy()  # 关闭主窗口
+
+    # 检查paramDirPathAndName是否存在，是否为json文件
+    if not os.path.exists(paramDirPathAndName) or not os.path.isfile(paramDirPathAndName) or not paramDirPathAndName.endswith(".json"):
+        print("Please select a valid parameter file.")
+        exit(-1)
+
+    # paramDirPathAndName = input("Please input the path and name of the parameter file: ")
     if not os.path.exists(paramDirPathAndName):
         create_param_template(paramDirPathAndName)
         print(f"Parameter file created at {paramDirPathAndName}.")
@@ -474,10 +604,10 @@ if __name__ == "__main__":
         print(f"Downloading video {videoId} to {viedoFileNameAndPath}")
         try:
             yt = YouTube(f'https://www.youtube.com/watch?v={videoId}', proxies=proxies, on_progress_callback=on_progress)
-            video  = yt.streams.filter(progressive=True).last()
+            video  = yt.streams.filter(progressive=True, file_extension='mp4').order_by('resolution').asc().first()
             video.download(output_path=workPath, filename=voiceFileName)
             # go back to the script directory
-            executeLog.write(f"[WORK o] Download video {videoId} to {viedoFileNameAndPath} successfully.")
+            executeLog.write(f"[WORK o] Download video {videoId} to {viedoFileNameAndPath} whith {video.resolution}.")
         except Exception as e:
             logStr = f"[WORK x] Error: Program blocked while downloading video {videoId} to {viedoFileNameAndPath}."
             executeLog.write(logStr)
@@ -489,24 +619,24 @@ if __name__ == "__main__":
         executeLog.write(logStr)
 
     
-    # try download 1080p video
-    # 需要单独下载1080p视频，因为pytube下载的1080p视频没音频
+    # try download more high-definition video
+    # 需要单独下载最高分辨率视频，因为pytube下载的1080p视频没音频
     voiceFhdFileName = f"{videoId}_fhd.mp4"
     voiceFhdFileNameAndPath = os.path.join(workPath, voiceFhdFileName)
     if paramDict["download fhd video"]:
         try:
-            print(f"Try to downloading 1080p video {videoId} to {voiceFhdFileNameAndPath}")
+            print(f"Try to downloading more high-definition video {videoId} to {voiceFhdFileNameAndPath}")
             yt = YouTube(f'https://www.youtube.com/watch?v={videoId}', proxies=proxies, on_progress_callback=on_progress)
-            video  = yt.streams.filter(res="1080p").first()
+            video  = yt.streams.filter(progressive=False, file_extension='mp4').order_by('resolution').desc().first()
             video.download(output_path=workPath, filename=voiceFhdFileName)
-            executeLog.write(f"[WORK o] Download 1080p video {videoId} to {voiceFhdFileNameAndPath} successfully.")
+            executeLog.write(f"[WORK o] Download 1080p high-definition {videoId} to {voiceFhdFileNameAndPath} whith {video.resolution}.")
         except:
-            logStr = f"[WORK x] Error: Program blocked while downloading 1080p video {videoId} to {voiceFhdFileNameAndPath}."
+            logStr = f"[WORK x] Error: Program blocked while downloading high-definition video {videoId} to {voiceFhdFileNameAndPath} whith {video.resolution}."
             executeLog.write(logStr)
             logStr = f"Program will not exit for that the error is not critical."
             executeLog.write(logStr)
     else:
-        logStr = "[WORK -] Skip downloading 1080p video."
+        logStr = "[WORK -] Skip downloading high-definition video."
         executeLog.write(logStr)
 
     # 打印当前系统时间
@@ -559,7 +689,7 @@ if __name__ == "__main__":
     if paramDict["audio transcribe"]:
         try:
             print(f"Transcribing audio from {voiceNameAndPath} to {srtEnFileNameAndPath}")
-            transcribe_audio(voiceNameAndPath, paramDict["audio transcribe model"], "en", srtEnFileNameAndPath)
+            transcribeAudioEn(voiceNameAndPath, paramDict["audio transcribe model"], "en", srtEnFileNameAndPath)
             executeLog.write(f"[WORK o] Transcribe audio from {voiceNameAndPath} to {srtEnFileNameAndPath} successfully.")
         except Exception as e:
             logStr = f"[WORK x] Error: Program blocked while transcribing audio from {voiceNameAndPath} to {srtEnFileNameAndPath}."
@@ -659,7 +789,7 @@ if __name__ == "__main__":
         executeLog.write(logStr)
 
     # 字幕转语音
-    voiceUrl = paramDict["GPT-SoVITS url"]
+    ttsSelect = paramDict["TTS"]
     voiceDir = os.path.join(workPath, videoId + "_zh_source")
     voiceSrcSrtName = "zh.srt"
     voiceSrcSrtNameAndPath = os.path.join(voiceDir, voiceSrcSrtName)
@@ -667,12 +797,17 @@ if __name__ == "__main__":
     voiceSrcMapNameAndPath = os.path.join(voiceDir, voiceSrcMapName)
     if paramDict["srt to voice srouce"]:
         try:
-            if voiceUrl == "":
-                print(f"Converting subtitle to voice by EdgeTTS in {srtZhFileNameAndPath} to {voiceDir}")
-                srtToVoiceEdge(srtZhFileNameAndPath, voiceDir)
-            else:
+            if ttsSelect == "GPT-SoVITS":
                 print(f"Converting subtitle to voice by GPT-SoVITS  in {srtZhFileNameAndPath} to {voiceDir}")
+                voiceUrl = paramDict["TTS param"]
                 srtToVoice(voiceUrl, srtZhFileNameAndPath, voiceDir)
+            else:
+                charator = paramDict["TTS param"]
+                if charator == "":
+                    srtToVoiceEdge(srtZhFileNameAndPath, voiceDir)
+                else:
+                    srtToVoiceEdge(srtZhFileNameAndPath, voiceDir, charator)
+                print(f"Converting subtitle to voice by EdgeTTS in {srtZhFileNameAndPath} to {voiceDir}")
             executeLog.write(f"[WORK o] Convert subtitle to voice in {srtZhFileNameAndPath} to {voiceDir} successfully.")
         except Exception as e:
             logStr = f"[WORK x] Error: Program blocked while converting subtitle to voice in {srtZhFileNameAndPath} to {voiceDir}."
@@ -712,7 +847,7 @@ if __name__ == "__main__":
     if paramDict["audio zh transcribe"]:
         try:
             print(f"Transcribing audio from {voiceConnectedNameAndPath} to {srtVoiceFileNameAndPath}")
-            transcribe_audio(voiceConnectedNameAndPath, paramDict["audio zh transcribe model"] ,"zh", srtVoiceFileNameAndPath)
+            transcribeAudioZh(voiceConnectedNameAndPath, paramDict["audio zh transcribe model"] ,"zh", srtVoiceFileNameAndPath)
             executeLog.write(f"[WORK o] Transcribe audio from {voiceConnectedNameAndPath} to {srtVoiceFileNameAndPath} successfully.")
         except Exception as e:
             logStr = f"[WORK x] Error: Program blocked while transcribing audio from {voiceConnectedNameAndPath} to {srtVoiceFileNameAndPath}."
@@ -729,8 +864,19 @@ if __name__ == "__main__":
     previewVideoNameAndPath = os.path.join(workPath, previewVideoName)
     if paramDict["video zh preview"]:
         try:
+            sourceVideoNameAndPath = ""
+            if os.path.exists(voiceFhdFileNameAndPath):
+                sourceVideoNameAndPath = voiceFhdFileNameAndPath
+            elif os.path.exists(viedoFileNameAndPath):
+                print(f"Cannot find high-definition video, use low-definition video {viedoFileNameAndPath} for preview video {previewVideoNameAndPath}")
+                sourceVideoNameAndPath = viedoFileNameAndPath
+            else:
+                logStr = f"[WORK x] Error: Cannot find source video for preview video {previewVideoNameAndPath}."
+                executeLog.write(logStr)
+                sys.exit(-1)
+
             print(f"Generating zh preview video in {previewVideoNameAndPath}")
-            zhVideoPreview(viedoFileNameAndPath, voiceConnectedNameAndPath, insturmentNameAndPath, srtVoiceFileNameAndPath, previewVideoNameAndPath)
+            zhVideoPreview(sourceVideoNameAndPath, voiceConnectedNameAndPath, insturmentNameAndPath, srtVoiceFileNameAndPath, previewVideoNameAndPath)
             executeLog.write(f"[WORK o] Generate zh preview video in {previewVideoNameAndPath} successfully.")
         except Exception as e:
             logStr = f"[WORK x] Error: Program blocked while generating zh preview video in {previewVideoNameAndPath}."
@@ -744,6 +890,9 @@ if __name__ == "__main__":
 
     executeLog.write("All done!!")
     print("dir: " + workPath)
+
+    # push any key to exit
+    input("Press any key to exit...")
     
 
     
