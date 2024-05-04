@@ -631,12 +631,12 @@ if __name__ == "__main__":
             video.download(output_path=workPath, filename=voiceFhdFileName)
             executeLog.write(f"[WORK o] Download 1080p high-definition {videoId} to {voiceFhdFileNameAndPath} whith {video.resolution}.")
         except:
-            logStr = f"[WORK x] Error: Program blocked while downloading 1080p video {videoId} to {voiceFhdFileNameAndPath}."
+            logStr = f"[WORK x] Error: Program blocked while downloading high-definition video {videoId} to {voiceFhdFileNameAndPath} whith {video.resolution}."
             executeLog.write(logStr)
             logStr = f"Program will not exit for that the error is not critical."
             executeLog.write(logStr)
     else:
-        logStr = "[WORK -] Skip downloading 1080p video."
+        logStr = "[WORK -] Skip downloading high-definition video."
         executeLog.write(logStr)
 
     # 打印当前系统时间

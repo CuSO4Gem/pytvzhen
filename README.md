@@ -2,7 +2,7 @@
 <h1>Pytvzhen</h1>
 最快的英文视频转中文方案<br><br>
 
-[![演示视频](https://img.shields.io/badge/点击观看-演示视频-red?style=for-the-badge&logo=bilibili)](https://www.bilibili.com/video/BV1Kx421U78x)  
+[![演示视频](https://img.shields.io/badge/点击观看-演示视频-red?style=for-the-badge&logo=bilibili)](https://www.bilibili.com/video/BV1JZ421E71G/)  
 [![Bilibili](https://img.shields.io/badge/Bilibili-蓝色硫酸铜-FF69B4?style=flat&logo=bilibili)](https://space.bilibili.com/278134)
 ![Windows Supported](https://img.shields.io/badge/Windows-Supported-brightgreen)
 ![Linux Supported](https://img.shields.io/badge/Linux-Supported-brightgreen) 
@@ -23,7 +23,7 @@
 <br>
 本方案缺陷：
 - 作者比较懒，没有时间做易用性调整。所以一些自定义的修改功能需要去源码里面查找。
-- 你需要一张英伟达显卡。
+- 你需要一张英伟达显卡。通过修改源码可以实现在CPU上跑。
 
 # 目录
 - [依赖](#依赖)
@@ -33,18 +33,21 @@
 - [工作流程](#工作流程)
 
 # 依赖
-首先，你需要一张英伟达显卡，因为作者比较懒只做了cuda的兼容。  
+（整合包用户可以忽略环境依赖）首先，你需要一张英伟达显卡，因为作者比较懒只做了cuda的兼容。  
 安装依赖需要：requirements.txt中的各种依赖，pythorch库，ffmpeg(可选)。本工程Python 3.9.19上验证。另外如果你想体验完整的工作流程，推荐下载一个字幕文件编辑器，尽管本程序用不到，但是在转换视频的工作中，你一定用得到，我使用Aegisub。
 
-各种基本库安装  
+1、各种基本库安装  
 ``
 pip install -r requirements.txt
 ``
 
-pytorch安装  
+2、ffmpeg安装  
+ffmpeg按照后添加到环境变量中，自行搜索安装ffmpeg。
+
+3、pytorch安装  
 在[点击这里](https://pytorch.org/get-started/locally/)，选择合适的安装版本，**必须要选择gpu版！！！！** 原因是作者偷懒没有做cpu方案，其实如果你愿意，改几行源码实现在CPU上跑应该也不难。
 
-其他依赖  
+4、其他依赖  
 因为本项目依赖[faster-whisper](https://github.com/SYSTRAN/faster-whisper/)，所以下载模型的时候国内可能会比较慢，甚至无法下载！！可执行文件版本在`faster-whisper_models`目录自带模型（应该吧）。另外本项目的release会提供模型压缩包，源码用户可以解压在faster-whisper_models目录中，使得目录结构为：
 ```
 faster-whisper_models
@@ -246,7 +249,7 @@ models目录下提供了一个基本可用的模型baseline.pth
 # 主要上游开源项目
  - [pytube](https://github.com/pytube/pytube)
  - [ffmpeg](https://ffmpeg.org/)
- - [stable-ts](https://github.com/jianfch/stable-ts)
+ - [faster-whisper](https://github.com/SYSTRAN/faster-whisper)
  - [whisper](https://github.com/openai/whisper)
  - [vocal-remover](https://github.com/tsurumeso/vocal-remover/releases)
  - [srt](https://srt.readthedocs.io/en/latest/api.html)
