@@ -1,0 +1,1 @@
+pyinstaller --onefile work_space.py

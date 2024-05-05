@@ -25,6 +25,7 @@ import wave
 import math
 import struct
 import tkinter as tk
+from tkinter import messagebox
 from tkinter import filedialog
 
 PROXY = "127.0.0.1:7890"
@@ -402,7 +403,6 @@ def srtToVoice(url, srtFileNameAndPath, outputDir):
     print("Convert srt to voice successfully")
     return True
 
-
 def srtToVoiceEdge(srtFileNameAndPath, outputDir, charactor = "zh-CN-XiaoyiNeural"):
     # create output directory if not exists
     if not os.path.exists(outputDir):
@@ -548,7 +548,30 @@ def voiceConnect(sourceDir, outputAndPath):
     combined.export(outputAndPath, format="wav")
     return True
 
+def envCheck():
+    # 检查环境变量中是否包含 ffmpeg
+    ffmpeg_path = os.environ.get('PATH', '').split(os.pathsep)
+    ffmpeg_found = any('ffmpeg' in path.lower() for path in ffmpeg_path)
+    waringMessage = ""
+
+    print(ffmpeg_found)
+    if not ffmpeg_found:
+        waringMessage += "未安装ffmpeg，请安装ffmpeg并将其所在目录添加到环境变量PATH中。\n"
+    
+    if waringMessage:
+        root = tk.Tk()
+        root.deiconify()  # 隐藏主窗口
+        messagebox.showwarning("环境依赖警告", waringMessage)
+
+        root.destroy()  # 销毁主窗口
+        return False
+    return True
+
+
 if __name__ == "__main__":
+
+    if not envCheck():
+        exit(-1)
 
     print("Please input the path and name of the parameter file (json format): ")
     root = tk.Tk()

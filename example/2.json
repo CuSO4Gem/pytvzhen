@@ -19,7 +19,7 @@
     "TTS": "edge", 
     "TTS param": "",
     "voice connect": true,
-    "audio zh transcribe": true,
+    "audio zh transcribe": false,
     "audio zh transcribe model": "medium",
     "video zh preview": true
 }
