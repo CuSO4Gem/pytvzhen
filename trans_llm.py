@@ -96,8 +96,8 @@ class TranslatorClass:
 
 def main():
     # 使用示例
-    api_key = 'sk-wgfnICtif7oeeCuZD3D2E3D09c7a43D6954a697eAb2b8dB7'
-    base_url = "https://one-api.bltcy.top/v1"
+    api_key = 'sk-xxx'
+    base_url = "https://xxx/v1"
     
     translator = TranslatorClass(api_key, base_url)
     
