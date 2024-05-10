@@ -1,5 +1,5 @@
 from tools.audio_remove import audio_remove
-from warning_file import WarningFile
+from tools.warning_file import WarningFile
 
 import os
 import copy
@@ -13,6 +13,7 @@ from pygtrans import Translate
 import requests
 from tqdm import tqdm
 from pydub import AudioSegment
+
 import asyncio  
 import edge_tts
 import datetime
@@ -25,22 +26,27 @@ import wave
 import math
 import struct
 import tkinter as tk
-from tkinter import messagebox
 from tkinter import filedialog
+from tools.trans_llm import TranslatorClass
+import tenacity
+from tools.merge_subtitle import SubtitleMerger
+from tools.merge_video_srt import add_subtitles_and_mix_audio
 
 PROXY = "127.0.0.1:7890"
 proxies = None
 TTS_MAX_TRY_TIMES = 16
+CHATGPT_URL = "https://api.openai.com/v1/"
+GHATGPT_TERMS_FILE = "tools/terms.json"
 
 paramDictTemplate = {
     "proxy": "127.0.0.1:7890", # 代理地址，留空则不使用代理
-    "video Id": "VIDEO_ID", # 油管视频ID
-    "work path": "WORK_PATH", # 工作目录
+    "video Id": "eMlx5fFNoYc", # 油管视频ID
+    "work path": "conver\\cheak_valve", # 工作目录
     "download video": True, # [工作流程开关]下载视频
     "download fhd video": True, # [工作流程开关]下载1080p视频
     "extract audio": True, # [工作流程开关]提取音频
     "audio remove": True, # [工作流程开关]去除音乐
-    "audio remove model path": "/path/to/your/audio_remove_model", # 去音乐模型路径
+    "audio remove model path": "models\\baseline.pth", # 去音乐模型路径
     "audio transcribe": True, # [工作流程开关]语音转文字
     "audio transcribe model": "base.en", # [工作流程开关]英文语音转文字模型名称
     "srt merge": True, # [工作流程开关]字幕合并
@@ -59,6 +65,8 @@ paramDictTemplate = {
 }
 diagnosisLog = None
 executeLog = None
+
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE" # 强制GPU版本cuda
 
 def create_param_template(path):
     with open(path, "w", encoding="utf-8") as file:
@@ -332,6 +340,44 @@ def srtFileDeeplTran(sourceFileNameAndPath, outputFileNameAndPath, key):
     with open(outputFileNameAndPath, "w", encoding="utf-8") as file:
         file.write(srtContent)
 
+def GPTTranslate(texts, key, model, proxies):
+    translator = TranslatorClass(api_key=key, 
+                                 base_url=CHATGPT_URL,
+                                 model_name=model,
+                                 proxies=proxies)
+    # 加载术语文件
+    translator.load_terms(GHATGPT_TERMS_FILE)
+    # list to string
+    textEn = ""
+    for oneLine in texts:
+        textEn += oneLine + "\n"
+    batch_text = textEn.split("\n")
+    print("Start to translate by GPT with Batch mode.")
+    results = translator.translate_batch(batch_text, max_tokens=1200)
+    textsZh = []
+    for i, result in enumerate(results, 1):
+        print(f"Translated text {i}:", result['text_result'])
+        print(f"Process time {i}:", result['time'])
+        textsZh.append(result['text_result'])
+    return textsZh
+
+def srtFileGPTTran(model, proxies, sourceFileNameAndPath, outputFileNameAndPath, key):
+    srtContent = open(sourceFileNameAndPath, "r", encoding="utf-8").read()
+    subGenerator = srt.parse(srtContent)
+    subTitleList = list(subGenerator)
+    contentList = []
+    for subTitle in subTitleList:
+        contentList.append(subTitle.content)
+    
+    contentList = GPTTranslate(contentList, key, model, proxies)
+
+    for i in range(len(subTitleList)):
+        subTitleList[i].content = contentList[i]
+    
+    srtContent = srt.compose(subTitleList)
+    with open(outputFileNameAndPath, "w", encoding="utf-8") as file:
+        file.write(srtContent)
+
 def stringToVoice(url, string, outputFile):
     data = {
         "text": string,
@@ -403,6 +449,9 @@ def srtToVoice(url, srtFileNameAndPath, outputDir):
     print("Convert srt to voice successfully")
     return True
 
+@tenacity.retry(wait=tenacity.wait_exponential(multiplier=1, min=4, max=10),
+                    stop=tenacity.stop_after_attempt(5),
+                    reraise=True)
 def srtToVoiceEdge(srtFileNameAndPath, outputDir, charactor = "zh-CN-XiaoyiNeural"):
     # create output directory if not exists
     if not os.path.exists(outputDir):
@@ -462,7 +511,18 @@ def srtToVoiceEdge(srtFileNameAndPath, outputDir, charactor = "zh-CN-XiaoyiNeura
     return True
 
 def zhVideoPreview(videoFileNameAndPath, voiceFileNameAndPath, insturmentFileNameAndPath, srtFileNameAndPath, outputFileNameAndPath):
-    
+    """
+    预览视频
+    参数:
+        videoFileNameAndPath (str): 视频文件的路径和文件名
+        voiceFileNameAndPath (str): 音频文件的路径和文件名
+        insturmentFileNameAndPath (str): 乐器音频文件的路径和文件名
+        srtFileNameAndPath (str): 字幕文件的路径和文件名
+        outputFileNameAndPath (str): 输出文件的路径和文件名
+    返回:
+        bool: 如果成功生成预览视频，则返回True，否则返回False
+    """
+    # 从moviepy.editor导入VideoFileClip的创建音-视频剪辑
     video_clip = VideoFileClip(videoFileNameAndPath)
 
     # 加载音频
@@ -548,30 +608,7 @@ def voiceConnect(sourceDir, outputAndPath):
     combined.export(outputAndPath, format="wav")
     return True
 
-def envCheck():
-    # 检查环境变量中是否包含 ffmpeg
-    ffmpeg_path = os.environ.get('PATH', '').split(os.pathsep)
-    ffmpeg_found = any('ffmpeg' in path.lower() for path in ffmpeg_path)
-    waringMessage = ""
-
-    print(ffmpeg_found)
-    if not ffmpeg_found:
-        waringMessage += "未安装ffmpeg，请安装ffmpeg并将其所在目录添加到环境变量PATH中。\n"
-    
-    if waringMessage:
-        root = tk.Tk()
-        root.deiconify()  # 隐藏主窗口
-        messagebox.showwarning("环境依赖警告", waringMessage)
-
-        root.destroy()  # 销毁主窗口
-        return False
-    return True
-
-
 if __name__ == "__main__":
-
-    if not envCheck():
-        exit(-1)
 
     print("Please input the path and name of the parameter file (json format): ")
     root = tk.Tk()
@@ -626,11 +663,17 @@ if __name__ == "__main__":
     if paramDict["download video"]:
         print(f"Downloading video {videoId} to {viedoFileNameAndPath}")
         try:
-            yt = YouTube(f'https://www.youtube.com/watch?v={videoId}', proxies=proxies, on_progress_callback=on_progress)
-            video  = yt.streams.filter(progressive=True, file_extension='mp4').order_by('resolution').asc().first()
-            video.download(output_path=workPath, filename=voiceFileName)
-            # go back to the script directory
-            executeLog.write(f"[WORK o] Download video {videoId} to {viedoFileNameAndPath} whith {video.resolution}.")
+            # 如果已经有了，就不下载了
+            if os.path.exists(viedoFileNameAndPath):
+                print(f"Video {videoId} already exists.")
+                executeLog.write(f"[WORK -] Skip downloading video.")
+                print("Now at: " + str(datetime.datetime.now()))
+            else:
+                yt = YouTube(f'https://www.youtube.com/watch?v={videoId}', proxies=proxies, on_progress_callback=on_progress)
+                video  = yt.streams.filter(progressive=True, file_extension='mp4').order_by('resolution').asc().first()
+                video.download(output_path=workPath, filename=voiceFileName)
+                # go back to the script directory
+                executeLog.write(f"[WORK o] Download video {videoId} to {viedoFileNameAndPath} whith {video.resolution}.")
         except Exception as e:
             logStr = f"[WORK x] Error: Program blocked while downloading video {videoId} to {viedoFileNameAndPath}."
             executeLog.write(logStr)
@@ -648,11 +691,17 @@ if __name__ == "__main__":
     voiceFhdFileNameAndPath = os.path.join(workPath, voiceFhdFileName)
     if paramDict["download fhd video"]:
         try:
-            print(f"Try to downloading more high-definition video {videoId} to {voiceFhdFileNameAndPath}")
-            yt = YouTube(f'https://www.youtube.com/watch?v={videoId}', proxies=proxies, on_progress_callback=on_progress)
-            video  = yt.streams.filter(progressive=False, file_extension='mp4').order_by('resolution').desc().first()
-            video.download(output_path=workPath, filename=voiceFhdFileName)
-            executeLog.write(f"[WORK o] Download 1080p high-definition {videoId} to {voiceFhdFileNameAndPath} whith {video.resolution}.")
+            # 如果已经有了，就不下载了
+            if os.path.exists(voiceFhdFileNameAndPath):
+                print(f"Video {videoId} already exists.")
+                executeLog.write(f"[WORK -] Skip downloading video.")
+                print("Now at: " + str(datetime.datetime.now()))
+            else:
+                print(f"Try to downloading more high-definition video {videoId} to {voiceFhdFileNameAndPath}")
+                yt = YouTube(f'https://www.youtube.com/watch?v={videoId}', proxies=proxies, on_progress_callback=on_progress)
+                video  = yt.streams.filter(progressive=False, file_extension='mp4').order_by('resolution').desc().first()
+                video.download(output_path=workPath, filename=voiceFhdFileName)
+                executeLog.write(f"[WORK o] Download 1080p high-definition {videoId} to {voiceFhdFileNameAndPath} whith {video.resolution}.")
         except:
             logStr = f"[WORK x] Error: Program blocked while downloading high-definition video {videoId} to {voiceFhdFileNameAndPath} whith {video.resolution}."
             executeLog.write(logStr)
@@ -776,6 +825,16 @@ if __name__ == "__main__":
                     executeLog.write(logStr)
                     sys.exit(-1)
                 srtFileDeeplTran(srtEnFileNameMergeAndPath, srtZhFileNameAndPath, paramDict["srt merge translate key"])
+            elif 'gpt' in paramDict["srt merge translate tool"]:
+                if paramDict['srt merge translate key'] == '':
+                    logStr = "[WORK x] Error: GPT API key is not provided. Please provide it in the parameter file."
+                    executeLog.write(logStr)
+                    sys.exit(-1)
+                srtFileGPTTran(paramDict['srt merge translate tool'], 
+                               proxies, 
+                               srtEnFileNameMergeAndPath, 
+                               srtZhFileNameAndPath, 
+                               paramDict['srt merge translate key'])
             else:
                 srtFileGoogleTran(srtEnFileNameMergeAndPath, srtZhFileNameAndPath)
                 executeLog.write(f"[WORK o] Translate subtitle from {srtEnFileNameMergeAndPath} to {srtZhFileNameAndPath} successfully.")
@@ -869,9 +928,12 @@ if __name__ == "__main__":
     srtVoiceFileNameAndPath = os.path.join(workPath, srtVoiceFileName)
     if paramDict["audio zh transcribe"]:
         try:
-            print(f"Transcribing audio from {voiceConnectedNameAndPath} to {srtVoiceFileNameAndPath}")
-            transcribeAudioZh(voiceConnectedNameAndPath, paramDict["audio zh transcribe model"] ,"zh", srtVoiceFileNameAndPath)
-            executeLog.write(f"[WORK o] Transcribe audio from {voiceConnectedNameAndPath} to {srtVoiceFileNameAndPath} successfully.")
+            if os.path.exists(srtVoiceFileNameAndPath):
+                print("srtVoiceFileNameAndPath exists.")
+            else:
+                print(f"Transcribing audio from {voiceConnectedNameAndPath} to {srtVoiceFileNameAndPath}")
+                transcribeAudioZh(voiceConnectedNameAndPath, paramDict["audio zh transcribe model"] ,"zh", srtVoiceFileNameAndPath)
+                executeLog.write(f"[WORK o] Transcribe audio from {voiceConnectedNameAndPath} to {srtVoiceFileNameAndPath} successfully.")
         except Exception as e:
             logStr = f"[WORK x] Error: Program blocked while transcribing audio from {voiceConnectedNameAndPath} to {srtVoiceFileNameAndPath}."
             executeLog.write(logStr)
@@ -916,6 +978,3 @@ if __name__ == "__main__":
 
     # push any key to exit
     input("Press any key to exit...")
-    
-
-    

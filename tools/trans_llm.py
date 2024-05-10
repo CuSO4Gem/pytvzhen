@@ -4,16 +4,19 @@ import concurrent.futures
 import time
 import tenacity
 
+DEFAULT_URL = "https://api.openai.com/v1/"
 
 class TranslatorClass:
     def __init__(self, 
                  api_key, 
-                 base_url="https://one-api.bltcy.top/v1",
-                 model_name="gpt-3.5-turbo-0125"):
+                 base_url=DEFAULT_URL,
+                 model_name="gpt-3.5-turbo-0125",
+                 proxies=None):
         self.api_key = api_key
         self.base_url = base_url
         self.model_name = model_name
         self.terms = {}
+        self.proxies = proxies
 
     def load_terms(self, terms_file):
         with open(terms_file, 'r', encoding='utf-8') as f:
@@ -50,7 +53,7 @@ class TranslatorClass:
             ],
             "max_tokens": max_tokens
         }
-        response = requests.post(self.base_url+"/chat/completions", headers=headers, json=payload)
+        response = requests.post(self.base_url+"/chat/completions", headers=headers, json=payload, proxies=self.proxies)
         return response.json()
     
     def process_text(self, text, max_tokens):
@@ -74,11 +77,11 @@ class TranslatorClass:
                                    )
         et = time.time()
         text_result = results['choices'][0]['message']['content']
-        print("original text_result:", text_result)
+        # print("original text_result:", text_result)
         if '```' in text_result:
             text_result = text_result.split('```')[1]
             text_result = text_result.strip().replace("\n", "").replace("translated text", "").replace("```", "")
-        print("text_result:", text_result)
+        # print("text_result:", text_result)
         result_dict = {"text_result": text_result,
                        "model": results['model'],
                        "usage": results['usage'],
@@ -96,13 +99,18 @@ class TranslatorClass:
 
 def main():
     # 使用示例
-    api_key = 'sk-xxx'
-    base_url = "https://xxx/v1"
+    api_key = 'sk-xxxxx'
+    # base_url = "https://xxx/v1"
+    proxies = {
+        'http': "127.0.0.1:7890",
+        'https': "127.0.0.1:7890",
+        'socks5': "127.0.0.1:7890"
+    }
     
-    translator = TranslatorClass(api_key, base_url)
+    translator = TranslatorClass(api_key, proxies=proxies)
     
     # 加载术语文件
-    terms_file = 'vlm_exps/terms.json'
+    terms_file = 'tools/terms.json'
     translator.load_terms(terms_file)
     
     # 单个文本翻译

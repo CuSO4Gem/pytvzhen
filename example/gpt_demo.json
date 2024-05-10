@@ -14,7 +14,6 @@
     "srt merge translate": true,
     "srt merge translate tool": "gpt-3.5-turbo-0125",
     "srt merge translate key": "sk-xxx",
-    "srt merge translate url": "https://xxxx/v1",
     "srt merge zh to text": true,
     "srt to voice srouce": true,
     "TTS": "edge", 
