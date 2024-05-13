@@ -13,7 +13,7 @@ from pygtrans import Translate
 import requests
 from tqdm import tqdm
 from pydub import AudioSegment
-
+import chardet
 import asyncio  
 import edge_tts
 import datetime
@@ -67,6 +67,9 @@ paramDictTemplate = {
 diagnosisLog = None
 executeLog = None
 
+# 默认utf-8编码
+os.environ['PYTHONIOENCODING'] = 'utf-8'
+
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE" # 强制GPU版本cuda
 
 def create_param_template(path):
@@ -111,6 +114,11 @@ def transcribeAudioEn(path, modelName="base.en", languate="en",srtFilePathAndNam
             finalWord = word.word.strip()
             subtitle.end = datetime.timedelta(seconds=word.end)
 
+            # 避免ascii编码错误，不知道怎么写，以后再说吧
+            # bytes_s = bytes(finalWord, 'latin-1')  # Convert the string to bytes using latin-1 encoding
+            # finalWord = bytes_s.decode('latin-1')  # Decode the bytes to a string using utf-8 encoding
+            # finalWord = finalWord.encode('utf-8')
+
             # 一句结束。但是要特别排除小数点被误认为是一句结尾的情况。
             if (finalWord[-1] in END_INTERPUNCTION) and not (len(finalWord)>1 and finalWord[-2] in NUMBER_CHARACTERS):
                 pushWord = " " +finalWord
@@ -118,9 +126,15 @@ def transcribeAudioEn(path, modelName="base.en", languate="en",srtFilePathAndNam
                 subs.append(subtitle)
                 index += 1
                 subtitle = None
+
             else:
                 if subtitle.content == "":
                     subtitle.content = finalWord
+                # 如果上一个字符是"."，则要考虑小数的可能性
+                elif finalWord[0] == ".":
+                    subtitle.content = subtitle.content + finalWord
+                elif len(subtitle.content) > 0 and subtitle.content[-1] == "." and finalWord[0] in NUMBER_CHARACTERS:
+                    subtitle.content = subtitle.content + finalWord
                 else:
                     subtitle.content = subtitle.content + " " + finalWord
     # 补充最后一个字幕 

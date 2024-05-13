@@ -8,7 +8,7 @@
     "audio remove": false,
     "audio remove model path": "models\\baseline.pth",
     "audio transcribe": false,
-    "audio transcribe model": "base.en",
+    "audio transcribe model": "medium",
     "srt merge": false,
     "srt merge en to text": false,
     "srt merge translate": false,

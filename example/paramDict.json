@@ -8,7 +8,7 @@
     "audio remove": true,
     "audio remove model path": "/path/to/your/audio_remove_model",
     "audio transcribe": true,
-    "audio transcribe model": "base.en",
+    "audio transcribe model": "medium",
     "srt merge": true,
     "srt merge en to text": true,
     "srt merge translate": true,
