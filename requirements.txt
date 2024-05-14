@@ -78,6 +78,7 @@ pyinstaller==6.6.0
 pyinstaller-hooks-contrib==2024.5
 pyreadline3==3.4.1
 PySocks==1.7.1
+pysubs2==1.6.1
 pytube==15.0.0
 pywin32-ctypes==0.2.2
 PyYAML==6.0.1
@@ -96,6 +97,7 @@ srt==3.4.1
 srt-deepl==0.9.1
 stack-data==0.6.3
 sympy==1.12
+tenacity==8.2.3
 threadpoolctl==3.4.0
 tiktoken==0.6.0
 tokenizers==0.15.2

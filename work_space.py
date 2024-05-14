@@ -85,7 +85,7 @@ def download_youtube_video(video_id, fileNameAndPath):
     from pytube import YouTube
     YouTube(f'https://youtu.be/{video_id}', proxies=proxies).streams.first().download(filename=fileNameAndPath)
 
-def transcribeAudioEn(path, modelName="base.en", languate="en",srtFilePathAndName="VIDEO_FILENAME.srt"):
+def transcribeAudioEn(path, modelName="base.en", language="en",srtFilePathAndName="VIDEO_FILENAME.srt"):
 
     # 非静音检测阈值，单位为分贝，越小越严格
     NOT_SILENCE_THRESHOLD_DB = -30
@@ -94,14 +94,14 @@ def transcribeAudioEn(path, modelName="base.en", languate="en",srtFilePathAndNam
     NUMBER_CHARACTERS = "0123456789"
      # 确保简体中文 
     initial_prompt=None
-    if languate=="zh":
+    if language=="zh":
         initial_prompt="简体"
 
     model = WhisperModel(modelName, device="cuda", compute_type="float16", download_root="faster-whisper_models", local_files_only=False)
     print("Whisper model loaded.")
 
     # faster-whisper
-    segments, _ = model.transcribe(audio=path,  language=languate, word_timestamps=True, initial_prompt=initial_prompt)
+    segments, _ = model.transcribe(audio=path,  language=language, word_timestamps=True, initial_prompt=initial_prompt)
 
     # 转换为srt的Subtitle对象
     index = 1
@@ -187,7 +187,7 @@ def transcribeAudioEn(path, modelName="base.en", languate="en",srtFilePathAndNam
     print("Output file: " + srtFilePathAndName)
     return True
 
-def transcribeAudioZh(path, modelName="base.en", languate="en",srtFilePathAndName="VIDEO_FILENAME.srt"):
+def transcribeAudioZh(path, modelName="base.en", language="en",srtFilePathAndName="VIDEO_FILENAME.srt"):
     END_INTERPUNCTION = ["。", "！", "？", "…", "；", "，", "、", ",", ".", "!", "?", ";"]
     ENGLISH_AND_NUMBER_CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
@@ -278,7 +278,7 @@ def srtSentanceMerge(sourceSrtFilePathAndName, OutputSrtFilePathAndName):
 
     srtContent = srt.compose(subItemList)
     # 如果打开错误则返回false
-    with open(OutputSrtFilePathAndName, "w") as file:
+    with open(OutputSrtFilePathAndName, "w", encoding="utf-8") as file:
         file.write(srtContent)
 
 def srt_to_text(srt_path):
