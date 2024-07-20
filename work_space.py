@@ -4,8 +4,8 @@ from tools.warning_file import WarningFile
 import os
 import copy
 import json
-from pytube import YouTube
-from pytube.cli import on_progress
+from pytubefix import YouTube
+from pytubefix.cli import on_progress
 from faster_whisper import WhisperModel
 import srt
 import re
@@ -31,7 +31,7 @@ from tkinter import messagebox
 from tools.trans_llm import TranslatorClass
 import tenacity
 from tools.merge_subtitle import SubtitleMerger
-from tools.merge_video_srt import add_subtitles_and_mix_audio
+import subprocess
 
 PROXY = "127.0.0.1:7890"
 proxies = None
@@ -82,7 +82,7 @@ def load_param(path):
     return paramDict
 
 def download_youtube_video(video_id, fileNameAndPath):
-    from pytube import YouTube
+    from pytubefix import YouTube
     YouTube(f'https://youtu.be/{video_id}', proxies=proxies).streams.first().download(filename=fileNameAndPath)
 
 def transcribeAudioEn(path, modelName="base.en", language="en",srtFilePathAndName="VIDEO_FILENAME.srt"):
@@ -625,11 +625,19 @@ def voiceConnect(sourceDir, outputAndPath):
 
 def envCheck():
     # 检查环境变量中是否包含 ffmpeg
-    ffmpeg_path = os.environ.get('PATH', '').split(os.pathsep)
-    ffmpeg_found = any('ffmpeg' in path.lower() for path in ffmpeg_path)
+        # 尝试调用ffmpeg命令来检查其是否安装
+    try:
+        subprocess.run(["ffmpeg", "-version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+        ffmpeg_found = True
+    except subprocess.CalledProcessError:
+        # ffmpeg命令存在但执行出错（不太可能发生，除非ffmpeg损坏）
+        ffmpeg_found = False
+    except FileNotFoundError:
+        # ffmpeg命令不存在
+        ffmpeg_found = False
+
     waringMessage = ""
 
-    print(ffmpeg_found)
     if not ffmpeg_found:
         waringMessage += "未安装ffmpeg，请安装ffmpeg并将其所在目录添加到环境变量PATH中。\n"
     
@@ -640,8 +648,8 @@ def envCheck():
 
         root.destroy()  # 销毁主窗口
         return False
-    return True
-
+    else:
+        return True
 
 if __name__ == "__main__":
 
